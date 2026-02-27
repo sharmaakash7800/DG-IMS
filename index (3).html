@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DG Store IMS v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f4f6fb;--bg2:#ffffff;--bg3:#f0f3f9;--bg4:#e8ecf5;
+  --border:#e2e7f0;--border2:#d0d7e8;
+  --text:#0f1729;--text2:#4a5568;--text3:#94a3b8;
+  --red:#e53e3e;--red2:#fff5f5;
+  --green:#38a169;--green2:#f0fff4;
+  --blue:#3b82f6;--blue2:#eff6ff;
+  --yellow:#d97706;--yellow2:#fffbeb;
+  --purple:#7c3aed;--purple2:#f5f3ff;
+  --orange:#ea580c;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --shadow2:0 8px 32px rgba(0,0,0,.12);
+  --radius:12px;--radius2:8px;
+}
+.dark{
+  --bg:#0c0e18;--bg2:#141928;--bg3:#1a2035;--bg4:#1f2640;
+  --border:#252d45;--border2:#2e3a55;
+  --text:#e8edf8;--text2:#94a3b8;--text3:#4a5568;
+  --red2:#2d1515;--green2:#0f2318;--blue2:#0f1f3d;--yellow2:#2d1f06;--purple2:#1e1040;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  --shadow2:0 8px 32px rgba(0,0,0,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);font-size:13px;transition:background .25s,color .25s;min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+input,select,textarea{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);color:var(--text);padding:9px 13px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;width:100%;transition:all .2s}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.12);background:var(--bg2)}
+select option{background:var(--bg2)}
+button{cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;border:none;outline:none;transition:all .18s}
+a{color:inherit;text-decoration:none}
+
+/* LAYOUT */
+#sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;box-shadow:var(--shadow)}
+#main{margin-left:230px;min-height:100vh}
+#topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border)}
+#content{padding:24px;max-width:1600px}
+
+/* SIDEBAR */
+.sb-logo{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.sb-store-name{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.sb-store-sub{font-size:10px;color:var(--text3);margin-top:1px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.sb-badge{display:inline-block;background:var(--blue2);color:var(--blue);border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:4px;vertical-align:middle}
+.sb-nav{padding:10px 10px;flex:1;overflow-y:auto}
+.sb-group{font-size:9px;color:var(--text3);letter-spacing:2px;padding:12px 8px 5px;text-transform:uppercase;font-weight:700}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:1px;border:1.5px solid transparent;position:relative}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--blue2);color:var(--blue);border-color:rgba(59,130,246,.2);font-weight:700}
+.nav-icon{font-size:15px;width:22px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;min-width:20px;text-align:center}
+.sb-footer{padding:12px;border-top:1px solid var(--border)}
+.theme-btn{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:8px;justify-content:center}
+.theme-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* TOPBAR */
+.topbar-left{display:flex;flex-direction:column}
+.topbar-title{font-size:16px;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.tb-stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px}
+.tb-reorder{background:var(--red2);border:1px solid rgba(229,62,62,.25);color:var(--red);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:7px}
+.card-title-dot{width:3px;height:16px;background:var(--blue);border-radius:2px}
+
+/* STAT GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;cursor:default;transition:transform .2s,box-shadow .2s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+.stat-icon{font-size:22px;margin-bottom:8px}
+.stat-val{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;margin-bottom:4px}
+.stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:6px}
+.stat-glow{position:absolute;right:-15px;bottom:-15px;width:70px;height:70px;border-radius:50%;opacity:.08}
+
+/* SEARCH BAR */
+.search-wrap{position:relative}
+.search-wrap input{padding-left:38px;background:var(--bg2);border:1.5px solid var(--border)}
+.search-wrap::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;z-index:1;pointer-events:none}
+.search-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);z-index:500;max-height:280px;overflow-y:auto;box-shadow:var(--shadow2);display:none}
+.search-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.search-item:hover{background:var(--bg3)}
+.search-item:last-child{border-bottom:none}
+.search-sku{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--blue2);color:var(--blue);border-radius:4px;padding:2px 6px;font-weight:600;flex-shrink:0}
+.search-name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.search-cat{font-size:10px;color:var(--text3)}
+
+/* TABLE */
+.tbl-container{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+.tbl-scroll{max-height:460px;overflow-y:auto}
+table{width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:5}
+th{background:var(--bg3);color:var(--text3);padding:11px 14px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;border-bottom:1px solid var(--border2);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);font-size:12px;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg3)}
+.tr-alt td{background:var(--bg3)}
+.tr-alt:hover td{background:var(--bg4)!important}
+
+/* BADGES */
+.badge{font-family:'JetBrains Mono',monospace;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:600;display:inline-block}
+.pill{border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500;display:inline-block}
+
+/* BUTTONS */
+.btn{border-radius:9px;color:#fff;padding:9px 18px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn-sm{border-radius:7px;color:#fff;padding:5px 12px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);border-radius:9px;color:var(--text2);padding:8px 16px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);background:var(--blue2)}
+.btn:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.btn-danger{background:var(--red)}
+.btn-success{background:var(--green)}
+.btn-primary{background:var(--blue)}
+.btn-warn{background:var(--yellow)}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px}
+.form-label{font-size:11px;color:var(--text3);display:block;margin-bottom:5px;font-weight:600;letter-spacing:.3px}
+.hint{font-size:10px;color:var(--yellow);font-weight:600;margin-top:3px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.filter-chip{background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s}
+.filter-chip.active{background:var(--blue2);border-color:var(--blue);color:var(--blue)}
+.date-pair{display:flex;align-items:center;gap:6px}
+.date-pair span{color:var(--text3);font-size:12px;font-weight:500}
+
+/* PREVIEW */
+.preview-bar{background:var(--blue2);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;gap:20px;flex-wrap:wrap;font-size:12px}
+
+/* TOAST */
+.toast{position:fixed;top:20px;right:20px;padding:13px 18px;border-radius:12px;z-index:9999;font-size:13px;font-weight:600;color:#fff;box-shadow:var(--shadow2);display:none;transform:translateX(0);animation:toastIn .3s ease}
+@keyframes toastIn{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* CHARTS */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-wrap{position:relative;height:240px}
+.chart-wrap-tall{position:relative;height:300px}
+
+/* DEMAND BARS */
+.demand-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.demand-rank{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.demand-info{flex:1;min-width:0}
+.demand-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.demand-bar-bg{height:5px;background:var(--bg4);border-radius:3px;margin-top:4px;overflow:hidden}
+.demand-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.demand-qty{font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px;flex-shrink:0}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:540px;max-width:94vw;box-shadow:var(--shadow2);animation:modalIn .25s ease}
+@keyframes modalIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.modal-footer{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+/* PAGINATION */
+.pagination{display:flex;gap:6px;align-items:center;justify-content:center;padding:14px}
+.pg-btn{background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text2);padding:6px 14px;font-size:12px;font-weight:600}
+.pg-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue);background:var(--blue2)}
+.pg-btn:disabled{opacity:.3;cursor:default}
+
+/* ALERT ITEM */
+.alert-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-radius:9px;margin-bottom:8px;border:1px solid}
+.alert-urgent{border-color:rgba(229,62,62,.3);background:var(--red2)}
+.alert-low{border-color:rgba(217,119,6,.3);background:var(--yellow2)}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty-text{font-size:14px;font-weight:500}
+.empty-sub{font-size:12px;margin-top:4px}
+
+/* PAGE */
+.page{display:none}.page.active{display:block}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  #sidebar{width:0;overflow:hidden}#main{margin-left:0}
+  .chart-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+      <div style="width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">🏪</div>
+      <div>
+        <div class="sb-store-name">DG Store <span class="sb-badge">IMS</span></div>
+        <div class="sb-store-sub">v5.0 · PREMIUM</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">Overview</div>
+    <div class="nav-item active" onclick="goPage('dashboard',this)">
+      <span class="nav-icon">📊</span><span>Dashboard</span>
+    </div>
+    <div class="sb-group">Inventory</div>
+    <div class="nav-item" onclick="goPage('items',this)">
+      <span class="nav-icon">📦</span><span>Items</span>
+      <span class="nav-badge" id="nb-items" style="display:none"></span>
+    </div>
+    <div class="nav-item" onclick="goPage('purchase',this)">
+      <span class="nav-icon">🛒</span><span>Purchase</span>
+    </div>
+    <div class="nav-item" onclick="goPage('sales',this)">
+      <span class="nav-icon">💸</span><span>Sales</span>
+    </div>
+    <div class="sb-group">Analytics</div>
+    <div class="nav-item" onclick="goPage('demand',this)">
+      <span class="nav-icon">🔥</span><span>Demand</span>
+    </div>
+    <div class="nav-item" onclick="goPage('reorder',this)">
+      <span class="nav-icon">🔔</span><span>Reorder</span>
+      <span class="nav-badge" id="nb-reorder" style="background:var(--red)"></span>
+    </div>
+    <div class="nav-item" onclick="goPage('reports',this)">
+      <span class="nav-icon">📈</span><span>Reports</span>
+    </div>
+  </nav>
+  <div class="sb-footer">
+    <button class="theme-btn" onclick="toggleTheme()">
+      <span id="theme-icon">🌙</span><span id="theme-label">Dark Mode</span>
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TOPBAR -->
+  <header id="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="tb-title">Dashboard</div>
+      <div class="topbar-sub" id="tb-sub"></div>
+    </div>
+    <div class="topbar-right">
+      <div id="tb-reorder-btn" class="tb-reorder" style="display:none" onclick="goPage('reorder',document.querySelector('[onclick*=reorder]'))"></div>
+      <div class="tb-stat" id="tb-stock"></div>
+      <div class="tb-stat" style="color:var(--text3);font-family:'JetBrains Mono',monospace" id="tb-date"></div>
+    </div>
+  </header>
+
+  <div id="content">
+
+  <!-- ═══════════════ DASHBOARD ═══════════════ -->
+  <div id="page-dashboard" class="page active">
+    <div class="stats-grid" id="dash-stats"></div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-dot"></span>Sales & Profit (Last 7 Days)</div>
+          <select id="chart-period" onchange="updateCharts()" style="width:auto;font-size:11px;padding:5px 10px">
+            <option value="7">7 Days</option><option value="14">14 Days</option><option value="30">30 Days</option>
+          </select>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-sales"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--purple)"></span>Category Stock Value</div></div>
+        <div class="chart-wrap"><canvas id="chart-cat"></canvas></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="card-title-dot" style="background:var(--green)"></span>Recent Purchases</div>
+            <button class="btn-outline" style="padding:5px 12px;font-size:11px" onclick="goPage('purchase',document.querySelectorAll('.nav-item')[3])">View All</button>
+          </div>
+          <div class="tbl-container"><table><thead><tr><th>Date</th><th>SKU</th><th>Item</th><th>Qty</th><th>Cost</th><th>Total</th></tr></thead><tbody id="dash-rec-purchases"></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="card-title-dot" style="background:var(--yellow)"></span>Recent Sales</div>
+            <button class="btn-outline" style="padding:5px 12px;font-size:11px" onclick="goPage('sales',document.querySelectorAll('.nav-item')[4])">View All</button>
+          </div>
+          <div class="tbl-container"><table><thead><tr><th>Date</th><th>SKU</th><th>Item</th><th>Qty</th><th>Revenue</th><th>Profit</th></tr></thead><tbody id="dash-rec-sales"></tbody></table></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--red)"></span>Reorder Alerts</div></div>
+          <div id="dash-reorder"></div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--orange)"></span>Top Selling</div></div>
+          <div id="dash-top-sell"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ITEMS ═══════════════ -->
+  <div id="page-items" class="page">
+    <!-- Search Bar -->
+    <div class="card" style="padding:16px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div class="search-wrap" style="flex:1;min-width:220px;max-width:340px">
+          <input id="item-search" placeholder="Search by name, SKU, category..." oninput="onItemSearch()" autocomplete="off"/>
+          <div class="search-dropdown" id="search-dropdown"></div>
+        </div>
+        <select id="item-cat-f" onchange="renderItems()" style="max-width:180px;width:auto">
+          <option value="All">All Categories</option>
+        </select>
+        <select id="item-status-f" onchange="renderItems()" style="max-width:150px;width:auto">
+          <option value="all">All Status</option>
+          <option value="low">Low Stock</option>
+          <option value="out">Out of Stock</option>
+          <option value="ok">In Stock</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAddModal()">＋ Add Item</button>
+        <span id="item-count" style="color:var(--text3);font-size:11px;font-weight:600;margin-left:auto"></span>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-scroll">
+        <table><thead><tr>
+          <th>SKU</th><th>Item Name</th><th>Category</th>
+          <th>Sell ₹</th><th>Buy ₹</th><th>Profit ₹</th><th>Margin</th>
+          <th>Stock</th><th>Status</th><th style="width:90px">Actions</th>
+        </tr></thead><tbody id="items-tbody"></tbody></table>
+      </div>
+      <div class="pagination" id="items-pg"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PURCHASE ═══════════════ -->
+  <div id="page-purchase" class="page">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--blue)"></span>New Purchase Entry</div></div>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr">
+          <div><label class="form-label">Date</label><input id="p-date" type="date"/></div>
+          <div>
+            <label class="form-label">Select Item</label>
+            <div class="search-wrap">
+              <input id="p-sku-search" placeholder="Search SKU or name..." oninput="onPSKUSearch()" autocomplete="off"/>
+              <div class="search-dropdown" id="p-sku-dropdown"></div>
+            </div>
+            <input type="hidden" id="p-sku-val"/>
+          </div>
+          <div><label class="form-label">Quantity</label><input id="p-qty" type="number" min="1" placeholder="Units" oninput="pPreview()"/></div>
+          <div>
+            <label class="form-label">Price/Unit ₹ <span class="hint" id="p-last-hint"></span></label>
+            <input id="p-price" type="number" step="0.01" placeholder="₹" oninput="pPreview()"/>
+          </div>
+          <div><label class="form-label">Supplier</label><input id="p-supplier" placeholder="Supplier name"/></div>
+          <div><label class="form-label">Notes</label><input id="p-notes" placeholder="Optional"/></div>
+        </div>
+        <div class="preview-bar" id="p-preview" style="display:none"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn btn-primary" onclick="addPurchase()">＋ Record Purchase</button>
+          <span id="p-total" style="color:var(--yellow);font-weight:700;font-family:'JetBrains Mono',monospace;font-size:14px"></span>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="card-title-dot"></span>Purchase Summary</div></div>
+          <div id="p-summary"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--green)"></span>Purchase Trend</div></div>
+          <div class="chart-wrap"><canvas id="chart-purchase-trend"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="filter-bar">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Purchase History</span>
+        <div class="date-pair" style="margin-left:auto">
+          <input id="p-from" type="date" style="width:140px"/>
+          <span>—</span>
+          <input id="p-to" type="date" style="width:140px"/>
+          <button class="btn-outline" style="padding:6px 14px;font-size:12px" onclick="renderPurchases()">Filter</button>
+          <button class="btn-outline" style="padding:6px 14px;font-size:12px" onclick="clearPF()">Clear</button>
+        </div>
+        <input id="p-search" placeholder="Search..." style="max-width:170px" oninput="renderPurchases()"/>
+      </div>
+      <div class="tbl-scroll">
+        <table><thead><tr><th>Date</th><th>SKU</th><th>Item</th><th>Qty</th><th>Buy ₹</th><th>Total Cost</th><th>Exp Profit/unit</th><th>Supplier</th></tr></thead>
+        <tbody id="p-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SALES ═══════════════ -->
+  <div id="page-sales" class="page">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--green)"></span>New Sale Entry</div></div>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr">
+          <div><label class="form-label">Date</label><input id="s-date" type="date"/></div>
+          <div>
+            <label class="form-label">Select Item</label>
+            <div class="search-wrap">
+              <input id="s-sku-search" placeholder="Search item..." oninput="onSSKUSearch()" autocomplete="off"/>
+              <div class="search-dropdown" id="s-sku-dropdown"></div>
+            </div>
+            <input type="hidden" id="s-sku-val"/>
+          </div>
+          <div><label class="form-label">Qty Sold</label><input id="s-qty" type="number" min="1" oninput="sPreview()"/></div>
+          <div><label class="form-label">Sale Price/Unit ₹</label><input id="s-price" type="number" step="0.01" oninput="sPreview()"/></div>
+        </div>
+        <div class="preview-bar" id="s-preview" style="display:none;background:var(--green2);border-color:rgba(56,161,105,.2)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <button class="btn btn-success" onclick="addSale()">＋ Record Sale</button>
+          <div style="display:flex;gap:14px;font-family:'JetBrains Mono',monospace;font-size:13px">
+            <span id="s-rev-lbl" style="color:var(--yellow)"></span>
+            <span id="s-profit-lbl"></span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--green)"></span>Sales Summary</div></div>
+          <div id="s-summary"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--yellow)"></span>Revenue Trend</div></div>
+          <div class="chart-wrap"><canvas id="chart-sales-trend"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="filter-bar">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Sales History</span>
+        <div class="date-pair" style="margin-left:auto">
+          <input id="s-from" type="date" style="width:140px"/>
+          <span>—</span>
+          <input id="s-to" type="date" style="width:140px"/>
+          <button class="btn-outline" style="padding:6px 14px;font-size:12px" onclick="renderSales()">Filter</button>
+          <button class="btn-outline" style="padding:6px 14px;font-size:12px" onclick="clearSF()">Clear</button>
+        </div>
+        <input id="s-search" placeholder="Search..." style="max-width:170px" oninput="renderSales()"/>
+      </div>
+      <div class="tbl-scroll">
+        <table><thead><tr><th>Date</th><th>SKU</th><th>Item</th><th>Qty</th><th>Sale ₹</th><th>Revenue</th><th>Buy ₹</th><th>Profit</th></tr></thead>
+        <tbody id="s-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DEMAND ═══════════════ -->
+  <div id="page-demand" class="page">
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-dot" style="background:var(--red)"></span>Most Demanded Items</div>
+          <div style="display:flex;gap:6px">
+            <select id="d-period" onchange="renderDemand()" style="width:auto;font-size:11px;padding:5px 10px">
+              <option value="all">All Time</option><option value="7">7 Days</option><option value="30">30 Days</option><option value="90">90 Days</option>
+            </select>
+            <select id="d-cat" onchange="renderDemand()" style="width:auto;font-size:11px;padding:5px 10px"><option value="All">All Cat.</option></select>
+          </div>
+        </div>
+        <div class="chart-wrap-tall"><canvas id="chart-demand-bar"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--purple)"></span>Sales by Category</div></div>
+        <div class="chart-wrap-tall"><canvas id="chart-cat-pie"></canvas></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--red)"></span>Top Sold</div></div>
+        <div id="d-top-sold"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--blue)"></span>Most Purchased</div></div>
+        <div id="d-top-purchased"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--green)"></span>Highest Margin</div></div>
+        <div id="d-top-margin"></div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="filter-bar">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Date-wise Analysis</span>
+        <div class="date-pair" style="margin-left:auto">
+          <input id="da-from" type="date" style="width:140px"/>
+          <span>—</span>
+          <input id="da-to" type="date" style="width:140px"/>
+          <button class="btn-outline" style="padding:6px 14px;font-size:12px" onclick="renderDateAnalysis()">Analyze</button>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table><thead><tr><th>Date</th><th>Transactions</th><th>Units Sold</th><th>Revenue ₹</th><th>Profit ₹</th><th>Margin</th><th>Top Item</th></tr></thead>
+        <tbody id="da-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ REORDER ═══════════════ -->
+  <div id="page-reorder" class="page">
+    <div class="stats-grid" id="reorder-stats"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="filter-bar">
+        <span style="font-size:12px;font-weight:700;color:var(--text)" id="reorder-title">Reorder Sheet</span>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <input id="ro-date" type="date" style="width:155px"/>
+          <button class="btn btn-danger" onclick="reorderAll()">⚡ Reorder All</button>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table><thead><tr><th>Priority</th><th>SKU</th><th>Item Name</th><th>Category</th><th>Stock</th><th>Min Level</th><th>Shortage</th><th>Last Buy ₹</th><th>MOQ</th><th>Override Qty</th><th>Override ₹</th></tr></thead>
+        <tbody id="reorder-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ REPORTS ═══════════════ -->
+  <div id="page-reports" class="page">
+    <div class="card" style="padding:14px 16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="date-pair">
+          <input id="rep-from" type="date" style="width:140px"/>
+          <span style="color:var(--text3)">—</span>
+          <input id="rep-to" type="date" style="width:140px"/>
+        </div>
+        <select id="rep-cat" onchange="renderReports()" style="max-width:180px;width:auto"><option value="All">All Categories</option></select>
+        <button class="btn btn-primary" style="padding:8px 16px;font-size:12px" onclick="renderReports()">Apply</button>
+        <button class="btn-outline" style="padding:7px 14px;font-size:12px" onclick="clearRepF()">Clear</button>
+      </div>
+    </div>
+    <div class="stats-grid" id="rep-stats"></div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot"></span>P&L Overview</div></div>
+        <div class="chart-wrap"><canvas id="chart-pnl"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--purple)"></span>Stock Distribution</div></div>
+        <div class="chart-wrap"><canvas id="chart-stock-dist"></canvas></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot" style="background:var(--purple)"></span>Category Summary</div></div>
+        <div class="tbl-container tbl-scroll">
+          <table><thead><tr><th>Category</th><th>SKUs</th><th>In Stock</th><th>Stock Value</th><th>Pot. Profit</th></tr></thead>
+          <tbody id="rep-cat-body"></tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="card-title-dot"></span>P&L Statement</div></div>
+        <div id="pnl-statement"></div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="filter-bar">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Full Inventory</span>
+        <select id="rep-inv-cat" onchange="renderInvTable()" style="max-width:180px;width:auto;margin-left:auto"><option value="All">All Categories</option></select>
+      </div>
+      <div class="tbl-scroll">
+        <table><thead><tr><th>SKU</th><th>Item</th><th>Category</th><th>Stock</th><th>Buy ₹</th><th>Sell ₹</th><th>Profit ₹</th><th>Margin</th><th>Stock Value</th></tr></thead>
+        <tbody id="rep-inv-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-bg" id="item-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">📦 Add New Item</div>
+    <div class="form-grid">
+      <div><label class="form-label">SKU Code *</label><input id="m-id" placeholder="e.g. COL-100"/></div>
+      <div><label class="form-label">Item Name *</label><input id="m-name"/></div>
+      <div><label class="form-label">Category</label><select id="m-cat"></select></div>
+      <div><label class="form-label">Selling Price ₹</label><input id="m-sell" type="number" value="0" step="0.01"/></div>
+      <div><label class="form-label">Buy Price ₹</label><input id="m-buy" type="number" value="0" step="0.01"/></div>
+      <div><label class="form-label">MOQ</label><input id="m-moq" type="number" value="1"/></div>
+      <div><label class="form-label">Reorder Level</label><input id="m-rl" type="number" value="2"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-success" id="modal-save-btn" onclick="saveItem()">✓ Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-bg" id="del-modal">
+  <div class="modal" style="width:400px">
+    <div class="modal-title">🗑️ Delete Item</div>
+    <div style="color:var(--text2);line-height:1.6" id="del-msg"></div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeDelModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const SEED = [{"id":"MAM-18","name":"Mamypoko pants(Diapers) Size-S","category":"Baby & Kids Care","moq":12,"maxLevel":5,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":12},{"id":"BAB-19","name":"Baby Wipes","category":"Baby & Kids Care","moq":2,"maxLevel":5,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"JOH-20","name":"Johnsons Baby Soap 50gm","category":"Baby & Kids Care","moq":6,"maxLevel":5,"sellingPrice":0,"buyPrice":0,"reorderLevel":6},{"id":"MAM-232","name":"Mamypoko pants (Diapers) Size-M","category":"Baby & Kids Care","moq":1,"maxLevel":1,"sellingPrice":12.0,"buyPrice":10.0,"reorderLevel":1},{"id":"JOH-555","name":"Johnson & Johnson Baby Cream","category":"Baby & Kids Care","moq":1,"maxLevel":2,"sellingPrice":60.0,"buyPrice":59.0,"reorderLevel":1},{"id":"JOH-556","name":"Johnson's Natural Baby Powder","category":"Baby & Kids Care","moq":1,"maxLevel":2,"sellingPrice":60.0,"buyPrice":59.0,"reorderLevel":1},{"id":"MAM-560","name":"Mamypoko pants (Diapers) Size-L","category":"Baby & Kids Care","moq":1,"maxLevel":2,"sellingPrice":14.0,"buyPrice":12.0,"reorderLevel":1},{"id":"WAT-168","name":"Water Bottles","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"RJC-187","name":"RJC Cold Drink(Orange)","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":5.41,"reorderLevel":1},{"id":"RJC-188","name":"RJC Cold Drink(Lemon)","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":5.41,"reorderLevel":1},{"id":"RJC-189","name":"RJC Cold Drink(Black)","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":5.41,"reorderLevel":1},{"id":"RJC-190","name":"RJC Cold Drink(Green)","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":5.41,"reorderLevel":1},{"id":"PEP-234","name":"Pepsodent Toothpaste Whitening 80g","category":"Health & Hygiene","moq":1,"maxLevel":1,"sellingPrice":62.0,"buyPrice":62.0,"reorderLevel":1},{"id":"Dou-235","name":"Douber Red","category":"Health & Hygiene","moq":1,"maxLevel":1,"sellingPrice":20.0,"buyPrice":19.0,"reorderLevel":1},{"id":"Clo-236","name":"Closeup 80g","category":"Health & Hygiene","moq":1,"maxLevel":1,"sellingPrice":55.0,"buyPrice":50.0,"reorderLevel":1},{"id":"CLE-237","name":"Clear Soda (Plain)","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PAC-238","name":"Glow & Lovely 25g","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":70.0,"buyPrice":65.0,"reorderLevel":1},{"id":"HEA-241","name":"Health Drink Powder","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"COC-321","name":"Coca cola (Zero Sugar)","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":1},{"id":"LIM-322","name":"Limca","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":1},{"id":"MOU-323","name":"Mountan Dew","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":1},{"id":"MAN-324","name":"Mango Maaza","category":"Beverages","moq":1,"maxLevel":1,"sellingPrice":50.0,"buyPrice":45.0,"reorderLevel":1},{"id":"APP-372","name":"Appy fizz","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"STI-373","name":"Sting Energy","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":18.0,"reorderLevel":2},{"id":"PEP-427","name":"Pepsi Botle 600ML","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":2},{"id":"THU-428","name":"Thumsup-750ml","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":2},{"id":"NAV-467","name":"Navratan Tea 250g","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":95.0,"buyPrice":87.0,"reorderLevel":2},{"id":"BIS-501","name":"Bisleri 1ltr","category":"Beverages","moq":1,"maxLevel":10,"sellingPrice":0,"buyPrice":10.0,"reorderLevel":1},{"id":"SPR-509","name":"Sprite Bottle-750ml","category":"Beverages","moq":1,"maxLevel":20,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":1},{"id":"MIR-510","name":"Mirinda Orange-750ml","category":"Beverages","moq":1,"maxLevel":20,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":1},{"id":"PAR-111","name":"Parle-G","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"MAR-112","name":"Marie Gold","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"GOO-113","name":"Maggi 560g","category":"Fast Food","moq":1,"maxLevel":1,"sellingPrice":116.0,"buyPrice":85.0,"reorderLevel":1},{"id":"BOU-114","name":"Parle Happy Happy 5rs.","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"HID-115","name":"Hide & Seek Fab","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":20.0,"buyPrice":18.0,"reorderLevel":1},{"id":"50--116","name":"50-50","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"SUN-117","name":"Sunfeast Bounce Orange Cream","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"SUN-118","name":"Sunfeast Bounce Choco Cream","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"CNC-119","name":"CNC","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"20--120","name":"20-20","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"KRA-121","name":"Krackjack","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"ORE-122","name":"Cadbury oreo 21rs","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":25.0,"buyPrice":21.0,"reorderLevel":1},{"id":"JIM-123","name":"Jim Jam","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MIL-124","name":"Milk Bikis","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"Veg-125","name":"Veg Atta Maggi 290g","category":"Fast Food","moq":1,"maxLevel":1,"sellingPrice":80.0,"buyPrice":70.0,"reorderLevel":1},{"id":"UNI-126","name":"Unibic Biscuits","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"TIG-127","name":"Tiger Biscuits","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"NIC-128","name":"Nice Time (Coconut flavor)","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MON-129","name":"Monaco","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.0,"reorderLevel":1},{"id":"CRE-279","name":"Cream Biscuits","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MAR-280","name":"Marie Biscuits","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GLU-281","name":"Glucose Biscuits","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"SAL-282","name":"Salted Biscuits","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GOO-343","name":"Good Day Butter Cookies(5rs)","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"GOO-347","name":"Good Day Butter Cookies(10rs)","category":"Biscuit","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"SUN-364","name":"Sunfeast Glucose Biscuits","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"BUT-368","name":"Butter Delite","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"PAR-424","name":"Parle Monaco","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":2},{"id":"CRE-460","name":"Cremica Coco 85.71 g","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"DUK-508","name":"Dukes NICE Sugar Sprinkled Coconut Biscuit","category":"Biscuit","moq":1,"maxLevel":20,"sellingPrice":20.0,"buyPrice":16.0,"reorderLevel":1},{"id":"ORE-511","name":"Oreo Original Chocolatey-10rs","category":"Biscuit","moq":1,"maxLevel":20,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"CAD-512","name":"Cadbury Oreo-10rs","category":"Biscuit","moq":1,"maxLevel":20,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"ORE-536","name":"Oreo Original Chocolatey-40rs","category":"Biscuit","moq":1,"maxLevel":10,"sellingPrice":40.0,"buyPrice":32.0,"reorderLevel":1},{"id":"CAD-537","name":"Cadbury Oreo-40rs","category":"Biscuit","moq":1,"maxLevel":10,"sellingPrice":40.0,"buyPrice":32.0,"reorderLevel":1},{"id":"CHO-286","name":"Chocolate Bars","category":"Chocolate","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PER-395","name":"Perk cadbury","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"MUN-397","name":"Munch (Nestls)","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"DAI-417","name":"Dairy Milk(5 Rs)","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":8.0,"reorderLevel":2},{"id":"NES-418","name":"Nestle Kitkat","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.45,"reorderLevel":2},{"id":"PAR-430","name":"Parle Melody Chocolate","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":2},{"id":"KIS-432","name":"Kismi Elaichi Flavoured Bar","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":2.0,"buyPrice":1.5,"reorderLevel":2},{"id":"SNA-440","name":"Snakker Choco with Water","category":"Chocolate","moq":2,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"TOI-16","name":"Toilet Cleaner","category":"Cleaning Tools","moq":2,"maxLevel":5,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"FLO-275","name":"Floor Cleaner","category":"Cleaning Tools","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"BRO-278","name":"Brooms","category":"Cleaning Tools","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"STI-349","name":"Stiff Broom (फुल झाड़ू)","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":35.0,"buyPrice":30.0,"reorderLevel":2},{"id":"PLA-350","name":"Plastic street broom(प्लास्टिक की झाड़ू)","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":35.0,"reorderLevel":2},{"id":"SIK-351","name":"Sik Jhadoo (सिक झाड़ू)-1","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":21.0,"reorderLevel":2},{"id":"MOP-352","name":"Mops(पोछा )","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":90.0,"buyPrice":80.0,"reorderLevel":2},{"id":"BAT-354","name":"Bathroom wiper","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":32.0,"reorderLevel":2},{"id":"GRE-366","name":"Great Blue Floor Cleaner Phenyle","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":35.0,"buyPrice":27.0,"reorderLevel":2},{"id":"PHE-367","name":"Phenyle (Doctor Hidis Black Phenyle)","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":30.0,"reorderLevel":2},{"id":"SIK-371","name":"Sik Jhadoo (सिक झाड़ू)-2","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":25.0,"reorderLevel":2},{"id":"HAR-376","name":"Harpic Power Plus 10x Clean","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":27.0,"reorderLevel":2},{"id":"CHA-481","name":"Chakri (Ground Spinner)","category":"Crackers","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":8.0,"reorderLevel":2},{"id":"SMA-482","name":"Small Anar Bom (10rs)","category":"Crackers","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":8.0,"reorderLevel":2},{"id":"MAC-483","name":"Machis Bom","category":"Crackers","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":18.0,"reorderLevel":2},{"id":"MUR-484","name":"Murga Chap","category":"Crackers","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":14.0,"reorderLevel":2},{"id":"POP-485","name":"Popup (Pop-Pop)","category":"Crackers","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":2},{"id":"BIG-486","name":"Big Anar Bom(20rs)","category":"Crackers","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":14.0,"reorderLevel":2},{"id":"SPA-487","name":"Sparklers (फुलझड़ी)","category":"Crackers","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":2},{"id":"MOI-293","name":"Moisturizing Lotion","category":"Creams & Lotions","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"FAI-294","name":"Fairness Creams","category":"Creams & Lotions","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"COL-295","name":"Cold Cream","category":"Creams & Lotions","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"FAI-359","name":"Fair & Lovely","category":"Creams & Lotions","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"BOR-362","name":"Boro Plus Antiseptic Cream","category":"Creams & Lotions","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"SMA-363","name":"Smart And Handsome","category":"Creams & Lotions","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"JOY-545","name":"Joy Honey & Almonds Lightweight Body Lotion 300ml","category":"Creams & Lotions","moq":1,"maxLevel":10,"sellingPrice":159.0,"buyPrice":155.0,"reorderLevel":1},{"id":"JOY-576","name":"Joy Honey & Almonds Lightweight Body Lotion 10ml","category":"Creams & Lotions","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":18.0,"reorderLevel":2},{"id":"GHE-154","name":"Ghee","category":"Dairy product","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"CUR-155","name":"Curd","category":"Dairy product","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MAD-493","name":"Madhu Desi Ghee -180ml","category":"Dairy product","moq":1,"maxLevel":5,"sellingPrice":130.0,"buyPrice":110.0,"reorderLevel":1},{"id":"TOO-26","name":"Toor Dal (अरहर दाल)","category":"Dal","moq":2,"maxLevel":3,"sellingPrice":125.0,"buyPrice":110.0,"reorderLevel":2},{"id":"MOO-27","name":"Moong Dal (मूंग दाल)","category":"Dal","moq":2,"maxLevel":3,"sellingPrice":110.0,"buyPrice":100.0,"reorderLevel":2},{"id":"MAS-28","name":"Masoor Dal (मसूर दाल)","category":"Dal","moq":2,"maxLevel":3,"sellingPrice":100.0,"buyPrice":80.0,"reorderLevel":2},{"id":"MUN-29","name":"Mung Moger Dal","category":"Dal","moq":1,"maxLevel":3,"sellingPrice":120.0,"buyPrice":110.0,"reorderLevel":1},{"id":"URA-30","name":"Urad Dal (उड़द दाल)","category":"Dal","moq":2,"maxLevel":3,"sellingPrice":110.0,"buyPrice":95.0,"reorderLevel":2},{"id":"CHA-31","name":"Chana Dal (चना दाल)","category":"Dal","moq":2,"maxLevel":2,"sellingPrice":100.0,"buyPrice":90.0,"reorderLevel":2},{"id":"GRE-32","name":"Green Chana Dal (हरे चने की दाल)","category":"Dal","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":100.0,"reorderLevel":2},{"id":"BLA-33","name":"Black Chana Dal (काले चने की दाल)","category":"Dal","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"CHO-222","name":"Choly (kabuli Chana)","category":"Dal","moq":1,"maxLevel":1,"sellingPrice":100.0,"buyPrice":80.0,"reorderLevel":1},{"id":"CHA-254","name":"Chana (White Chickpeas)","category":"Dal","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DIS-14","name":"Dishwashing Liquid","category":"Detergent","moq":12,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":12},{"id":"LAU-15","name":"Laundry Detergent","category":"Detergent","moq":12,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":12},{"id":"SUP-181","name":"Super Nirma (10Rs)","category":"Detergent","moq":2,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"EXP-182","name":"Expert Double Action Formula Dishwash Bar (5rs)","category":"Detergent","moq":2,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"SUR-186","name":"Surf excel","category":"Detergent","moq":2,"maxLevel":1,"sellingPrice":20.0,"buyPrice":9.0,"reorderLevel":2},{"id":"SAR-223","name":"Saras detergent","category":"Detergent","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"DIS-274","name":"Dishwash Liquid","category":"Detergent","moq":1,"maxLevel":1,"sellingPrice":45.0,"buyPrice":30.0,"reorderLevel":1},{"id":"WHE-380","name":"Wheel 2 in one (1kg)","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":73.0,"buyPrice":71.0,"reorderLevel":2},{"id":"GHA-381","name":"Ghari Detergent powder(1kg)","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":73.0,"buyPrice":71.0,"reorderLevel":2},{"id":"SUP-396","name":"Super Nirma(5 Rs)","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.0,"reorderLevel":2},{"id":"GHA-398","name":"Ghadi Detergent  (1/2 kg)","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":36.0,"buyPrice":33.0,"reorderLevel":2},{"id":"EXP-431","name":"Expert Double Action Formula Dishwash Bar (10rs)","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":9.0,"reorderLevel":2},{"id":"EZE-442","name":"Ezee Liquid Detergent","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"SUR-459","name":"Surf Excel Easy Wash Detergent Powder (1kg)","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":128.0,"buyPrice":120.0,"reorderLevel":2},{"id":"GHA-488","name":"30 No Sample Beedi (३० नं बीड़ी)","category":"Tobacco","moq":2,"maxLevel":2,"sellingPrice":12.0,"buyPrice":9.75,"reorderLevel":2},{"id":"TID-541","name":"Tide Natural Lemon & chandan","category":"Detergent","moq":1,"maxLevel":10,"sellingPrice":88.0,"buyPrice":82.0,"reorderLevel":1},{"id":"UJA-549","name":"Ujala Supreme","category":"Detergent","moq":1,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"TID-551","name":"Tide Plus Double Power Jasmine & Rose Detergent Powder (10rs)","category":"Detergent","moq":1,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"ARI-554","name":"Ariel Detergent Powder Rs.10","category":"Detergent","moq":1,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.8,"reorderLevel":1},{"id":"PAT-447","name":"Pattal(10rs)","category":"Disposal","moq":2,"maxLevel":2,"sellingPrice":15.0,"buyPrice":10.0,"reorderLevel":2},{"id":"DON-448","name":"Dona (5rs)","category":"Disposal","moq":2,"maxLevel":2,"sellingPrice":8.0,"buyPrice":4.0,"reorderLevel":2},{"id":"DIS-449","name":"Disposal Tea Cups(10rs)","category":"Disposal","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":6.0,"reorderLevel":2},{"id":"BIG-450","name":"Big Disposal Tea Cups(15rs)","category":"Disposal","moq":2,"maxLevel":2,"sellingPrice":15.0,"buyPrice":8.0,"reorderLevel":2},{"id":"WAT-451","name":"Water Disposal(17)","category":"Disposal","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":17.0,"reorderLevel":2},{"id":"FOI-452","name":"Foil Paper(9 meter)","category":"Disposal","moq":2,"maxLevel":2,"sellingPrice":60.0,"buyPrice":46.0,"reorderLevel":2},{"id":"PEA-249","name":"Peanuts","category":"Dry Fruits & Nuts","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CAS-250","name":"Cashews","category":"Dry Fruits & Nuts","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PEA-270","name":"Peanuts","category":"Dry Fruits & Nuts","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CAS-271","name":"ProV Select Cashew, 200 g","category":"Dry Fruits & Nuts","moq":2,"maxLevel":2,"sellingPrice":330.0,"buyPrice":199.0,"reorderLevel":2},{"id":"ALM-272","name":"ProV Almonds 500 gm Pouch","category":"Dry Fruits & Nuts","moq":2,"maxLevel":2,"sellingPrice":2.0,"buyPrice":189.0,"reorderLevel":2},{"id":"RAI-273","name":"Wonderland Raisins | Kishmish 500g","category":"Dry Fruits & Nuts","moq":2,"maxLevel":2,"sellingPrice":300.0,"buyPrice":259.0,"reorderLevel":2},{"id":"DRY-465","name":"Dry Fruits Whole Raw Cashew Cashews 500g","category":"Dry Fruits & Nuts","moq":2,"maxLevel":2,"sellingPrice":470.0,"buyPrice":469.0,"reorderLevel":2},{"id":"GHE-242","name":"Ghee (Cow) 10rs","category":"Dairy product","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"MUS-255","name":"Mustard Oil (Sarson ka Tel) 450ml","category":"Edible Oils & Ghee","moq":1,"maxLevel":1,"sellingPrice":90.0,"buyPrice":79.0,"reorderLevel":1},{"id":"GRO-256","name":"Groundnut Oil","category":"Edible Oils & Ghee","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DES-257","name":"Desi Ghee (Cow)","category":"Dairy product","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHA-535","name":"Chambal Refined Soyabean Oil - Fresh, 1 L","category":"Edible Oils & Ghee","moq":1,"maxLevel":10,"sellingPrice":125.0,"buyPrice":118.0,"reorderLevel":1},{"id":"SAR-547","name":"Saras Ghee 180gm","category":"Dairy product","moq":1,"maxLevel":10,"sellingPrice":113.0,"buyPrice":110.0,"reorderLevel":1},{"id":"LIG-22","name":"Light Bulbs","category":"Electrical","moq":6,"maxLevel":5,"sellingPrice":0,"buyPrice":45.0,"reorderLevel":6},{"id":"LED-106","name":"LED Bulbs","category":"Electrical","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CFL-107","name":"CFL Bulbs","category":"Electrical","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"NIG-108","name":"Night Bulbs","category":"Electrical","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"TUB-109","name":"Tube Lights","category":"Electrical","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"EXT-110","name":"Big Wipre","category":"Cleaning Tools","moq":1,"maxLevel":1,"sellingPrice":60.0,"buyPrice":45.0,"reorderLevel":1},{"id":"AA -247","name":"AA Batteries","category":"Electrical","moq":1,"maxLevel":1,"sellingPrice":14.0,"buyPrice":12.0,"reorderLevel":1},{"id":"AAA-248","name":"AAA Batteries","category":"Electrical","moq":1,"maxLevel":1,"sellingPrice":14.0,"buyPrice":12.0,"reorderLevel":1},{"id":"INS-382","name":"Insulation Tap","category":"Electrical","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"BAJ-529","name":"Bajaj Ivora Plus 9W LED bulb","category":"Electrical","moq":1,"maxLevel":20,"sellingPrice":150.0,"buyPrice":45.0,"reorderLevel":1},{"id":"PIG-530","name":"Pigeon LED 9 W LED Bulb","category":"Electrical","moq":1,"maxLevel":20,"sellingPrice":150.0,"buyPrice":39.0,"reorderLevel":1},{"id":"SAB-205","name":"Sabudany","category":"Fast","moq":1,"maxLevel":1,"sellingPrice":60.0,"buyPrice":46.0,"reorderLevel":1},{"id":"ROC-268","name":"Rock Salt (Sendha Namak)","category":"Fast","moq":1,"maxLevel":1,"sellingPrice":15.0,"buyPrice":8.0,"reorderLevel":1},{"id":"ANJ-361","name":"Anjali Rock Salt (Sendha Namak)","category":"Fast","moq":2,"maxLevel":2,"sellingPrice":15.0,"buyPrice":8.0,"reorderLevel":2},{"id":"BLA-478","name":"Black Salt","category":"Fast","moq":2,"maxLevel":2,"sellingPrice":15.0,"buyPrice":7.0,"reorderLevel":2},{"id":"RAJ-539","name":"Rajgiri राजगीरा आटा 500gm","category":"Fast","moq":1,"maxLevel":10,"sellingPrice":144.0,"buyPrice":72.0,"reorderLevel":1},{"id":"GRO-568","name":"Groundnut","category":"Fast","moq":2,"maxLevel":2,"sellingPrice":65.0,"buyPrice":61.56,"reorderLevel":2},{"id":"MAG-202","name":"Maggi","category":"Fast Food","moq":1,"maxLevel":1,"sellingPrice":15.0,"buyPrice":13.0,"reorderLevel":1},{"id":"MAG-532","name":"Maggi 2-Minute Noodles-140g","category":"Fast Food","moq":1,"maxLevel":10,"sellingPrice":15.0,"buyPrice":28.0,"reorderLevel":1},{"id":"INS-09","name":"Instant Noodles","category":"Fast Food","moq":50,"maxLevel":50,"sellingPrice":15.0,"buyPrice":13.0,"reorderLevel":50},{"id":"INS-150","name":"Instant Pasta","category":"Fast Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"RAV-206","name":"Rava (सूजी/Suji )","category":"Fast Food","moq":1,"maxLevel":1,"sellingPrice":50.0,"buyPrice":35.77,"reorderLevel":1},{"id":"PAS-283","name":"Pasta","category":"Fast Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MIX-284","name":"Mixed Fruit Jam","category":"Fast Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"LAP-480","name":"Lapsi daliya","category":"Fast Food","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":39.0,"reorderLevel":2},{"id":"SEV-559","name":"Seviyan Kheer","category":"Fast Food","moq":1,"maxLevel":2,"sellingPrice":20.0,"buyPrice":17.0,"reorderLevel":1},{"id":"SUG-01","name":"Sugar","category":"Food","moq":50,"maxLevel":10,"sellingPrice":50.0,"buyPrice":44.0,"reorderLevel":50},{"id":"COO-04","name":"Cooking Oil","category":"Food","moq":12,"maxLevel":15,"sellingPrice":120.0,"buyPrice":103.0,"reorderLevel":12},{"id":"WHE-06","name":"Wheat Flour(5kg)","category":"Food","moq":5,"maxLevel":30,"sellingPrice":40.0,"buyPrice":32.0,"reorderLevel":5},{"id":"WHE-07","name":"Wheat Flour(10kg)","category":"Food","moq":3,"maxLevel":30,"sellingPrice":40.0,"buyPrice":32.0,"reorderLevel":3},{"id":"SAL-08","name":"Salt","category":"Food","moq":50,"maxLevel":10,"sellingPrice":0,"buyPrice":9.0,"reorderLevel":50},{"id":"RAJ-34","name":"Rajma (रजमा)","category":"Food","moq":2,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"WHI-35","name":"White Chickpeas (सफेद चना)","category":"Food","moq":2,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"PIC-153","name":"Pickles","category":"Food","moq":1,"maxLevel":1,"sellingPrice":60.0,"buyPrice":55.0,"reorderLevel":1},{"id":"ONI-156","name":"Onion","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"POT-157","name":"Potato","category":"Food","moq":1,"maxLevel":1,"sellingPrice":22.0,"buyPrice":20.0,"reorderLevel":1},{"id":"TOM-158","name":"Tomato","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GIN-159","name":"Ginger","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GRE-160","name":"Green Chilies","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"LEM-161","name":"Lemons","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"TAM-169","name":"Tamarind (इमली)","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"POH-173","name":"Poha(पोहा)","category":"Food","moq":2,"maxLevel":1,"sellingPrice":60.0,"buyPrice":50.0,"reorderLevel":2},{"id":"GRA-174","name":"Gram Flour(बेसन)","category":"Food","moq":2,"maxLevel":1,"sellingPrice":100.0,"buyPrice":80.0,"reorderLevel":2},{"id":"REF-175","name":"Refined Flour(मैदा)","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"SEM-176","name":"Semolina(सूजी )","category":"Food","moq":2,"maxLevel":1,"sellingPrice":60.0,"buyPrice":38.0,"reorderLevel":2},{"id":"GUD-177","name":"Gud(गुड़)","category":"Food","moq":2,"maxLevel":1,"sellingPrice":55.0,"buyPrice":45.0,"reorderLevel":2},{"id":"JIR-201","name":"Jira (ptta) 5rs","category":"Food","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"BAS-216","name":"Basen","category":"Food","moq":1,"maxLevel":1,"sellingPrice":100.0,"buyPrice":75.0,"reorderLevel":1},{"id":"MIR-218","name":"Miraj Tost","category":"Food","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":8.4,"reorderLevel":1},{"id":"ROC-338","name":"Rock Salt (Sendha Namak)","category":"Food","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":25.0,"reorderLevel":1},{"id":"OAT-356","name":"Oats","category":"Food","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"DEV-414","name":"Dev Swaad Chakki Fresh Atta (5kg)","category":"Food","moq":2,"maxLevel":2,"sellingPrice":35.0,"buyPrice":32.0,"reorderLevel":2},{"id":"DEV-415","name":"Dev Swaad Chakki Fresh Atta (10kg)","category":"Food","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":32.5,"reorderLevel":2},{"id":"DEV-429","name":"Dev Swaad Chakki Fresh Atta (50kg)","category":"Food","moq":2,"maxLevel":2,"sellingPrice":34.0,"buyPrice":32.0,"reorderLevel":2},{"id":"MAI-436","name":"Maida","category":"Food","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":34.0,"reorderLevel":2},{"id":"SUR-444","name":"Surbhi Brand Sanva (200g)","category":"Food","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":25.0,"reorderLevel":2},{"id":"SAC-445","name":"Sachamoti Sanva (500g)","category":"Food","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":65.0,"reorderLevel":2},{"id":"MAI-252","name":"Maize Flour (Makki ka Atta)","category":"Groceries & Staples","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"RAJ-253","name":"Rajma (Kidney Beans)","category":"Groceries & Staples","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"REF-267","name":"Refined Salt","category":"Groceries & Staples","moq":1,"maxLevel":1,"sellingPrice":15.0,"buyPrice":6.0,"reorderLevel":1},{"id":"JAG-269","name":"Jaggery (Gud)","category":"Groceries & Staples","moq":1,"maxLevel":1,"sellingPrice":55.0,"buyPrice":45.0,"reorderLevel":1},{"id":"PIC-392","name":"Pickle Mango (1kg)","category":"Groceries & Staples","moq":2,"maxLevel":2,"sellingPrice":110.0,"buyPrice":100.0,"reorderLevel":2},{"id":"MAN-393","name":"Mango Pickle(0.5kg)","category":"Groceries & Staples","moq":2,"maxLevel":2,"sellingPrice":60.0,"buyPrice":55.0,"reorderLevel":2},{"id":"GOD-203","name":"Godrej Expert Rich Crème Hair Colour","category":"Hair color","moq":1,"maxLevel":1,"sellingPrice":15.0,"buyPrice":13.0,"reorderLevel":1},{"id":"DAB-221","name":"Dabur Sarson Amla Oil, (30ml)","category":"Hair Oil","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"ALM-246","name":"Almonds oil pouch(1Rs)","category":"Hair Oil","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.75,"reorderLevel":1},{"id":"COC-290","name":"Coconut Oil","category":"Hair Oil","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":7.91,"reorderLevel":1},{"id":"AML-291","name":"Amla Hair Oil","category":"Hair Oil","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"NON-292","name":"Non-sticky Hair Oil","category":"Hair Oil","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"POP-316","name":"Popluar Coconut Oil (10rs)","category":"Hair Oil","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"SHA-334","name":"Shanti Badam Amla Hair Oil","category":"Hair Oil","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"TRA-419","name":"Train Marka Mustard Oil (200ml)","category":"Hair Oil","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":47.0,"reorderLevel":2},{"id":"SAR-503","name":"sarso oil (Rs 10)","category":"Hair Oil","moq":1,"maxLevel":10,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":1},{"id":"BAJ-557","name":"Bajaj Almond Drops - ₹10","category":"Hair Oil","moq":1,"maxLevel":2,"sellingPrice":10.0,"buyPrice":108.0,"reorderLevel":1},{"id":"WIZ-489","name":"Wiz leman liquid 1ltr","category":"Handwash","moq":2,"maxLevel":2,"sellingPrice":60.0,"buyPrice":50.0,"reorderLevel":2},{"id":"FAC-23","name":"Face Masks","category":"Health & Hygiene","moq":6,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":6},{"id":"HAN-24","name":"Hand Sanitizer","category":"Health & Hygiene","moq":2,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"BAN-25","name":"Band-aids","category":"Health & Hygiene","moq":2,"maxLevel":1,"sellingPrice":0,"buyPrice":10.0,"reorderLevel":2},{"id":"WHI-317","name":"Whisper Choice Ultra(XL)","category":"Health & Hygiene","moq":1,"maxLevel":1,"sellingPrice":50.0,"buyPrice":45.0,"reorderLevel":1},{"id":"STA-318","name":"Stayfree (XL)","category":"Health & Hygiene","moq":1,"maxLevel":1,"sellingPrice":42.0,"buyPrice":40.0,"reorderLevel":1},{"id":"AIR-17","name":"Air Fresheners","category":"Home care","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"LAK-195","name":"Lakshman Rekha","category":"Home care","moq":1,"maxLevel":1,"sellingPrice":20.0,"buyPrice":10.8,"reorderLevel":1},{"id":"MOS-276","name":"Mosquito Repellent (Coil)","category":"Home care","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MOS-277","name":"Mosquito Repellent (Liquid)","category":"Home care","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GOO-319","name":"Good Knight Flash LiquidVaporiser","category":"Home care","moq":1,"maxLevel":1,"sellingPrice":95.0,"buyPrice":90.0,"reorderLevel":1},{"id":"MAX-320","name":"Maxo A-Grade","category":"Home care","moq":1,"maxLevel":1,"sellingPrice":30.0,"buyPrice":27.0,"reorderLevel":1},{"id":"DUS-353","name":"Dust Cleaning Pan","category":"Home care","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":16.0,"reorderLevel":2},{"id":"FAS-375","name":"Fast Card","category":"Home care","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"VIN-439","name":"Vinod Safety Match","category":"Home care","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.75,"reorderLevel":2},{"id":"REF-472","name":"Reflect Dishwas","category":"Home care","moq":2,"maxLevel":2,"sellingPrice":45.0,"buyPrice":30.0,"reorderLevel":2},{"id":"VIM-473","name":"Vim Drop Dish-115ml","category":"Home care","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":36.0,"reorderLevel":2},{"id":"SUR-474","name":"Surf Excel Easy Wash Detergent Powder (500g)","category":"Home care","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":64.0,"reorderLevel":2},{"id":"MOS-502","name":"Mosquito agarbatti","category":"Home care","moq":1,"maxLevel":10,"sellingPrice":10.0,"buyPrice":5.44,"reorderLevel":1},{"id":"HAL-130","name":"Haldiram's Aloo Bhujia","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"HAL-131","name":"Haldiram's Moong Dal","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"BIK-132","name":"Bikaneri Bhujia","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"NAV-133","name":"Navratan Mix","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"KHA-134","name":"Khatta Meetha","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"COR-135","name":"Cornflakes Mixture","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHA-136","name":"Chana Chor Garam","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MAS-137","name":"Masala Peanuts","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"SEV-138","name":"Sev (Plain, Laung Sev, Ratlami Sev)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DAL-139","name":"Dal Moth","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"KRI-196","name":"krishna Barik Namkeen(500gm)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":70.0,"buyPrice":55.0,"reorderLevel":1},{"id":"KRI-197","name":"krishna Namkeen( Mixcher)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":70.0,"buyPrice":55.0,"reorderLevel":1},{"id":"KRI-198","name":"krishna Namkeen Falhari(500gm)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":70.0,"buyPrice":60.0,"reorderLevel":1},{"id":"C.P-207","name":"C.P Namkin (balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"C.P-208","name":"C.P Masala (balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"ALO-209","name":"Aloo sev(balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"TIK-210","name":"Tikha mitha(balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"GAT-211","name":"Gathiya(balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"FUN-212","name":"Funne Spicy punch(balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"NOO-213","name":"Noodle Sticks Masala(balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"RAT-214","name":"Ratlami Sev(balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"FLA-215","name":"flamin Nachos(balaji)","category":"Namkeen","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"PAP-355","name":"Papad","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"CRU-383","name":"Crunch Masala Masti (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"CLA-384","name":"Classic sev (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"CRU-385","name":"Crunch Tomato Twist (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"CRE-386","name":"Cream & Onion (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"PUN-387","name":"Punjabi Tadka (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"YUM-388","name":"Yumstik (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"CHA-389","name":"Chataka Pataka Flamin Hot (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"SIM-390","name":"Simply Salted (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"SHI-391","name":"Shing Bhujia (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"15G-407","name":"15GM Chat Chaska Waafers (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"15G-408","name":"15GM Crunchchek Chilli Tadka (Balaji","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"FAR-409","name":"Farali Chevda (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"MUN-410","name":"Mungdal (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"CHA-411","name":"Chanajor Garam (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"MAS-412","name":"Masala sev murmura (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"SNA-413","name":"Snackchokdi Masala (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"LAL-420","name":"Lalaji Ki Aloo Chips (1/2kg)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":65.0,"reorderLevel":2},{"id":"22G-438","name":"22gm Wheels Masala (Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"CP -491","name":"CP Tangy Tomato Namkeen","category":"Namkeen","moq":12,"maxLevel":12,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":12},{"id":"TOM-492","name":"Tomato Wafers","category":"Namkeen","moq":12,"maxLevel":12,"sellingPrice":0,"buyPrice":4.5,"reorderLevel":12},{"id":"C.P-495","name":"C.P. lasaniya Namkeen- 24gm","category":"Namkeen","moq":1,"maxLevel":10,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"24G-505","name":"24gm gippi tornnado flamin chilli (balaji)","category":"Namkeen","moq":1,"maxLevel":20,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"HOT-506","name":"Hot Nachos-21gm","category":"Namkeen","moq":1,"maxLevel":20,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":1},{"id":"WHE-513","name":"Wheelos Masala-24gm","category":"Namkeen","moq":1,"maxLevel":10,"sellingPrice":0,"buyPrice":1.25,"reorderLevel":1},{"id":"MUR-514","name":"Murli Namkeen Barik-500","category":"Namkeen","moq":1,"maxLevel":10,"sellingPrice":105.0,"buyPrice":95.0,"reorderLevel":1},{"id":"MUR-515","name":"Murli Namkeen Mixture-500","category":"Namkeen","moq":1,"maxLevel":10,"sellingPrice":105.0,"buyPrice":95.0,"reorderLevel":1},{"id":"MUR-516","name":"Murli Sabji Namkeen-500","category":"Namkeen","moq":1,"maxLevel":10,"sellingPrice":105.0,"buyPrice":95.0,"reorderLevel":1},{"id":"MAY-526","name":"Maya Barik Namkeen(500gm)","category":"Namkeen","moq":1,"maxLevel":20,"sellingPrice":125.0,"buyPrice":112.0,"reorderLevel":1},{"id":"MAY-527","name":"Maya Mixcher Namkeen( 500gm)","category":"Namkeen","moq":1,"maxLevel":20,"sellingPrice":125.0,"buyPrice":112.0,"reorderLevel":1},{"id":"CHA-569","name":"Chanadal 24gm","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"ENO-180","name":"Eno","category":"OTC Medicines & First Aid","moq":2,"maxLevel":1,"sellingPrice":11.0,"buyPrice":9.16,"reorderLevel":2},{"id":"PAI-233","name":"Pain Relief Balm/Gel","category":"OTC Medicines & First Aid","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"IOD-335","name":"Iodex Body Pain Expert","category":"OTC Medicines & First Aid","moq":1,"maxLevel":1,"sellingPrice":46.0,"buyPrice":44.0,"reorderLevel":1},{"id":"ZAN-336","name":"Zandu Balm","category":"OTC Medicines & First Aid","moq":1,"maxLevel":1,"sellingPrice":45.0,"buyPrice":42.0,"reorderLevel":1},{"id":"DR.-341","name":"Dr.Ortho Pain Relieving Ointment","category":"OTC Medicines & First Aid","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":98.0,"reorderLevel":1},{"id":"DET-519","name":"Dettol Antiseptic Liquid 60 ml","category":"OTC Medicines & First Aid","moq":1,"maxLevel":10,"sellingPrice":42.0,"buyPrice":41.0,"reorderLevel":1},{"id":"ENO-540","name":"Eno 3 In 1 With Real Jeera, Ajwain & Kala Namak","category":"OTC Medicines & First Aid","moq":1,"maxLevel":10,"sellingPrice":55.0,"buyPrice":46.0,"reorderLevel":1},{"id":"LAY-140","name":"Lays (Classic, Magic Masala, etc.)","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"KUR-141","name":"Kurkure (Masala Munch, Green Chutney, etc.)","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"BIN-142","name":"Bingo (Mad Angles, Tedhe Medhe)","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHE-143","name":"Cheetos","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"UNC-144","name":"Uncle Chips","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHI-145","name":"Chips (local brands)","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"POP-146","name":"Popcorn (Ready to eat / microwave)","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":16.0,"buyPrice":16.0,"reorderLevel":1},{"id":"NAC-147","name":"Nachos","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHE-148","name":"Cheese Balls","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"COR-149","name":"Corn Puffs","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PIC-285","name":"Pickles (Achar)","category":"Packaged Snacks","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DEO-296","name":"Deodorants (Men/Women)","category":"Perfume","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"KS -561","name":"KS Spark Pocket Perfume 18ml","category":"Perfume","moq":2,"maxLevel":1,"sellingPrice":70.0,"buyPrice":55.0,"reorderLevel":2},{"id":"TOO-10","name":"Toothpaste","category":"Personal Care","moq":12,"maxLevel":10,"sellingPrice":0,"buyPrice":75.0,"reorderLevel":12},{"id":"TOO-11","name":"Toothbrush","category":"Personal Care","moq":12,"maxLevel":10,"sellingPrice":20.0,"buyPrice":12.0,"reorderLevel":12},{"id":"FAC-12","name":"Face Wash","category":"Personal Care","moq":2,"maxLevel":20,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"SHA-13","name":"Shaving Cream","category":"Personal Care","moq":1,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"HEE-179","name":"Heena mahndi","category":"Personal Care","moq":2,"maxLevel":1,"sellingPrice":10.0,"buyPrice":6.0,"reorderLevel":2},{"id":"KAL-220","name":"Kalpna Mehndi Cone","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.7,"reorderLevel":1},{"id":"TOO-288","name":"Toothpaste","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"TOO-289","name":"Toothbrushes","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GIL-297","name":"Gillette Guard (Blade Only) - 14rs","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":14.0,"buyPrice":11.0,"reorderLevel":1},{"id":"SAN-298","name":"Sanitary Napkins","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"TAL-299","name":"Talcum Powder","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"LIP-300","name":"Lip Balm","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"WIL-325","name":"Wild Stone Ultra sensual Talc","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"VI--327","name":"Vi-John (Saving Cream) 30g","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":46.0,"buyPrice":42.0,"reorderLevel":1},{"id":"LIP-346","name":"Lip Balm","category":"Personal Care","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":65.0,"reorderLevel":1},{"id":"NIR-394","name":"Nirala Wadhwa's","category":"Personal Care","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":2},{"id":"COL-421","name":"Colgate Cibaca (65g)","category":"Personal Care","moq":2,"maxLevel":2,"sellingPrice":90.0,"buyPrice":27.0,"reorderLevel":2},{"id":"PRE-441","name":"Prem Dulhan Mehendi Cone","category":"Personal Care","moq":2,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"NEE-443","name":"Neeta Natural Mehandi Powder (500gm)","category":"Personal Care","moq":2,"maxLevel":2,"sellingPrice":105.0,"buyPrice":97.0,"reorderLevel":2},{"id":"DAB-457","name":"Dabur Red Toothpaste - 100g","category":"Personal Care","moq":2,"maxLevel":2,"sellingPrice":80.0,"buyPrice":79.0,"reorderLevel":2},{"id":"MAY-458","name":"Mayuri Henna Black 30 gm","category":"Personal Care","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":6.0,"reorderLevel":2},{"id":"COL-471","name":"Colgate MaxFress -70g","category":"Personal Care","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":65.0,"reorderLevel":2},{"id":"COL-518","name":"Colget Dental Cream-44g","category":"Personal Care","moq":1,"maxLevel":10,"sellingPrice":20.0,"buyPrice":17.9,"reorderLevel":1},{"id":"INS-524","name":"Instant Mehndi Cone","category":"Personal Care","moq":1,"maxLevel":20,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":1},{"id":"COL-538","name":"Colget Dental Cream-100g","category":"Personal Care","moq":1,"maxLevel":10,"sellingPrice":70.0,"buyPrice":65.0,"reorderLevel":1},{"id":"COL-544","name":"Colgate Strong Teeth Cavity Protection Toothpaste 500gm","category":"Personal Care","moq":1,"maxLevel":10,"sellingPrice":312.0,"buyPrice":285.0,"reorderLevel":1},{"id":"AGA-162","name":"Agarbatti","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.5,"reorderLevel":1},{"id":"CAM-163","name":"Camphor (Kapoor)","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":1},{"id":"COT-164","name":"Cotton Wicks (Batti)","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":12.0,"buyPrice":9.0,"reorderLevel":1},{"id":"MOG-310","name":"Mogra Dhoop Sticks","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":1},{"id":"SAN-311","name":"Sandal Dhoop Sticks","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":1},{"id":"ROS-312","name":"Rose Dhoop Sticks","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":1},{"id":"GUG-313","name":"Gugal Dhoop Sticks","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":1},{"id":"MAT-165","name":"Matchbox","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.75,"reorderLevel":1},{"id":"SIN-166","name":"Sindoor","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"HAL-167","name":"Haldi & Chawal packets (small)","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PUJ-171","name":"Puja thali items","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":15.0,"buyPrice":13.0,"reorderLevel":1},{"id":"DRY-172","name":"Dry coconut(सूखा नारियल)","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":45.0,"buyPrice":30.0,"reorderLevel":1},{"id":"SRI-231","name":"Sriphal\" (श्रीफल) coconut","category":"Pooja Samagri","moq":1,"maxLevel":1,"sellingPrice":45.0,"buyPrice":35.0,"reorderLevel":1},{"id":"GUL-378","name":"Gulab Dhoop (Bansi)","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":2},{"id":"MOG-379","name":"Mogra Dhoop (Bansi)","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":2},{"id":"BHA-446","name":"Bharti Ratrani ittar","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":5.0,"reorderLevel":2},{"id":"LAC-453","name":"Lachha(7 rs)","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":15.0,"buyPrice":7.0,"reorderLevel":2},{"id":"KUM-454","name":"Kumkum(10rs)","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"ITT-455","name":"Ittar (5)","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":5.0,"reorderLevel":2},{"id":"MAT-456","name":"MATA ki Chunari","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":15.0,"buyPrice":12.0,"reorderLevel":2},{"id":"LAC-500","name":"Lachha(3 rs)","category":"Pooja Samagri","moq":1,"maxLevel":10,"sellingPrice":10.0,"buyPrice":3.0,"reorderLevel":1},{"id":"KIR-517","name":"Kirshan Pooja agarbatti-5rs","category":"Pooja Samagri","moq":1,"maxLevel":10,"sellingPrice":5.0,"buyPrice":3.5,"reorderLevel":1},{"id":"ROA-548","name":"Roasted chickpeas(Bhungda-500gm)","category":"Pooja Samagri","moq":1,"maxLevel":2,"sellingPrice":65.0,"buyPrice":55.0,"reorderLevel":1},{"id":"SUG-565","name":"Sugar crystal-500gm मिश्री\" (Misri)","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":55.0,"buyPrice":42.5,"reorderLevel":2},{"id":"RIC-05","name":"Rice","category":"Rice","moq":20,"maxLevel":75,"sellingPrice":70.0,"buyPrice":65.0,"reorderLevel":20},{"id":"RIC-251","name":"Rice (Basmati)","category":"Rice","moq":1,"maxLevel":1,"sellingPrice":70.0,"buyPrice":65.0,"reorderLevel":1},{"id":"LON-425","name":"Long rice","category":"Rice","moq":2,"maxLevel":2,"sellingPrice":60.0,"buyPrice":46.0,"reorderLevel":2},{"id":"LON-426","name":"Long Sella Rice","category":"Rice","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":48.0,"reorderLevel":2},{"id":"YEL-507","name":"Yellow Rice","category":"Rice","moq":1,"maxLevel":20,"sellingPrice":100.0,"buyPrice":72.0,"reorderLevel":1},{"id":"IND-534","name":"India gate Feast Rozzana (1kg)","category":"Rice","moq":1,"maxLevel":10,"sellingPrice":125.0,"buyPrice":99.0,"reorderLevel":1},{"id":"DAA-563","name":"Daawat Pulav Basmati-500g","category":"Rice","moq":2,"maxLevel":2,"sellingPrice":60.0,"buyPrice":49.0,"reorderLevel":2},{"id":"IND-564","name":"India gate Pulav -500g","category":"Rice","moq":2,"maxLevel":2,"sellingPrice":85.0,"buyPrice":59.0,"reorderLevel":2},{"id":"KIS-219","name":"Kissan Fresh Tomato Ketchup(10)/90gm","category":"Sauce","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"KIS-464","name":"Kissan Fresh Tomato Ketchup, 415 g Pouch","category":"Sauce","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":47.0,"reorderLevel":2},{"id":"MAG-470","name":"Maggi Imli Sauce-75g","category":"Sauce","moq":2,"maxLevel":2,"sellingPrice":22.0,"buyPrice":20.0,"reorderLevel":2},{"id":"HOM-546","name":"Home Chef Tomato Ketchup1kg","category":"Sauce","moq":1,"maxLevel":10,"sellingPrice":115.0,"buyPrice":102.0,"reorderLevel":1},{"id":"RAK-230","name":"Rakhi","category":"Seasonal Items","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":72.0,"reorderLevel":1},{"id":"NEE-400","name":"Needles 3 Number (sewing)","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"NEE-401","name":"Needles 4 Number (sewing)","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"DAR-402","name":"Darner Hand Sewing Needles (3.5)","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"HAN-403","name":"Hand sewing Needles Capotera","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"REG-404","name":"Regal sharps Needles 5","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"MAC-405","name":"Machine Needles 18/110","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"MAC-406","name":"Machine Needles 16/110","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"CLI-66","name":"Clinic Plus (क्लिनिक प्लस)","category":"Shampoo","moq":1,"maxLevel":12,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":1},{"id":"HEA-67","name":"Head & Shoulders (हेड एंड शोल्डर्स)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":1},{"id":"DOV-68","name":"Dove (डव)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PAN-69","name":"Pantene (पैंटीन)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"SUN-70","name":"Sunsilk (सनसिल्क)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":1},{"id":"TRE-71","name":"Tresemme (ट्रेसमे)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GAR-72","name":"Garnier Fructis (गार्नियर फ्रक्टिस)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"L'O-73","name":"L'Oreal Paris (लोरेल पेरिस)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHI-74","name":"Chick Egg White","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":1},{"id":"VAT-75","name":"Vatika (वाटिका)","category":"Shampoo","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":1},{"id":"DOV-370","name":"Dove Shampoo+Conditioner","category":"Shampoo","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"GIL-204","name":"Gillette Guard® Shaving Razor","category":"Shaving Razor","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":25.0,"reorderLevel":1},{"id":"GIL-365","name":"Gillette Rust Guard","category":"Shaving Razor","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":27.0,"reorderLevel":2},{"id":"LIF-51","name":"Lifebuoy (लाइफबॉय)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"LUX-52","name":"Lux (लक्स)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DOV-53","name":"Dove (डव)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":2.0,"buyPrice":1.5,"reorderLevel":1},{"id":"PEA-54","name":"Pears (पियर्स)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"SAN-55","name":"Santoor (संतूर)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DET-56","name":"Dettol (डेटॉल) (10rs)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"CIN-57","name":"Cinthol (सिन्थोल)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MYS-58","name":"Mysore Sandal (मैसूर सैंडल)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"MED-59","name":"Medimix (मेडिमिक्स)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"HAM-60","name":"Hamam (हमाम)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PAT-61","name":"Patanjali Soap (पतंजलि साबुन)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"FIA-62","name":"Fiama (फियामा)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"VIV-63","name":"Vivel (विवेल)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GOD-64","name":"Godrej No.1 (गॉडरेज नं.1)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"MAR-65","name":"Margo (मार्गो)","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DET-229","name":"Dettol Original Bathing Soap Germ","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":40.0,"buyPrice":36.0,"reorderLevel":1},{"id":"SAN-344","name":"Santur Sandal and Turmeric","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"LIF-345","name":"LifeBuoy Grem Expert","category":"Soap","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"NIR-422","name":"Nirma Beauty Soap Pink","category":"Soap","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"CHA-423","name":"Chandraprakash Premium Soap","category":"Soap","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"NJO-479","name":"Njoy rich milk & almond","category":"Soap","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":2},{"id":"PAT-566","name":"Patanjali Haldi-75g","category":"Soap","moq":2,"maxLevel":2,"sellingPrice":22.0,"buyPrice":21.0,"reorderLevel":2},{"id":"PAT-567","name":"Patanjali Neem-75g","category":"Soap","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":38.0,"reorderLevel":2},{"id":"TUR-36","name":"Turmeric Powder (हल्दी पाउडर) 100gm","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":30.0,"buyPrice":21.0,"reorderLevel":1},{"id":"RED-37","name":"Red Chili Powder (लाल मिर्च पाउडर) 100gm","category":"Spices","moq":2,"maxLevel":1,"sellingPrice":30.0,"buyPrice":21.0,"reorderLevel":2},{"id":"COR-38","name":"Coriander Powder (धनिया पाउडर)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":30.0,"buyPrice":21.0,"reorderLevel":1},{"id":"CUM-39","name":"Cumin Seeds (जीरा)","category":"Spices","moq":0,"maxLevel":1,"sellingPrice":0,"buyPrice":300.0,"reorderLevel":1},{"id":"MUS-40","name":"Mustard Seeds (सरसों के दाने)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":80.0,"reorderLevel":1},{"id":"BLA-41","name":"Black Pepper (काली मिर्च)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"CLO-42","name":"Cloves (लौंग)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"CIN-43","name":"Cinnamon (दालचीनी)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CAR-44","name":"Cardamom (इलायची)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"FEN-45","name":"Fenugreek Seeds (मेथी दाना)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"FEN-46","name":"Fennel Seeds (सौंफ)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"ASA-47","name":"Asafoetida (हींग)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"BAY-48","name":"Bay Leaves (तेज पत्ता)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CAR-49","name":"Carom Seeds (अजवाइन)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"DRY-50","name":"Dry Ginger Powder (सौंठ पाउडर)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GAR-243","name":"Garam Masala","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHA-244","name":"Chana Masala","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":13.0,"reorderLevel":1},{"id":"PAV-245","name":"Pav Bhaji Masala","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":45.0,"reorderLevel":1},{"id":"MUS-258","name":"Mustard Seeds (Rai/Sarson)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"FEN-259","name":"Fenugreek Seeds (Methi Dana)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"BLA-260","name":"Black Cardamom (Badi Elaichi)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CIN-261","name":"Cinnamon (Dalchini)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"BAY-262","name":"Bay Leaves (Tej Patta)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"ASA-263","name":"Asafoetida (Hing)","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"BRU-264","name":"BRU Classic Cold Coffee 230 ml","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":20.0,"reorderLevel":2},{"id":"CHA-265","name":"Chana Masala","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"PAV-266","name":"Pav Bhaji Masala","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"COM-342","name":"Componded Hing","category":"Spices","moq":1,"maxLevel":1,"sellingPrice":65.0,"buyPrice":32.0,"reorderLevel":1},{"id":"SHA-360","name":"Shahi Garam Masala","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":40.0,"reorderLevel":2},{"id":"KHI-369","name":"Khir Ptta","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":6.0,"reorderLevel":2},{"id":"TAT-374","name":"Tata Namak","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":26.0,"reorderLevel":2},{"id":"RED-435","name":"Red Chili Powder (लाल मिर्च पाउडर) 200gm","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":60.0,"buyPrice":42.0,"reorderLevel":2},{"id":"GAR-437","name":"Garam Masala Patta","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":6.0,"reorderLevel":2},{"id":"RAR-461","name":"Rari Red-100g","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":24.0,"reorderLevel":2},{"id":"SHY-469","name":"Shyam Sambhar -100g","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":37.5,"reorderLevel":2},{"id":"SHY-475","name":"Shyam Sabji Masala","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":68.0,"buyPrice":62.0,"reorderLevel":2},{"id":"RIC-476","name":"Rich Tomato Pichkoo","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":145.0,"buyPrice":12.0,"reorderLevel":2},{"id":"AMC-496","name":"Amchur Powder -Patta(5rs)","category":"Spices","moq":1,"maxLevel":10,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"SOF-497","name":"Soff (Saunf)Patta(5rs)","category":"Spices","moq":1,"maxLevel":10,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"PAP-498","name":"Paped Khar Patta(10rs)","category":"Spices","moq":1,"maxLevel":10,"sellingPrice":10.0,"buyPrice":6.0,"reorderLevel":1},{"id":"RAY-499","name":"Rayi (Rai)Patta(5rs)","category":"Spices","moq":1,"maxLevel":10,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"SHA-531","name":"Shaha Jeera-50g","category":"Spices","moq":1,"maxLevel":20,"sellingPrice":50.0,"buyPrice":44.0,"reorderLevel":1},{"id":"SHY-542","name":"Shyam Jeera 100gm","category":"Spices","moq":1,"maxLevel":10,"sellingPrice":62.0,"buyPrice":55.0,"reorderLevel":1},{"id":"SHY-543","name":"Shyam Sounf 100gm","category":"Spices","moq":1,"maxLevel":10,"sellingPrice":62.0,"buyPrice":55.0,"reorderLevel":1},{"id":"EML-562","name":"Emli-200","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":65.0,"buyPrice":61.0,"reorderLevel":2},{"id":"KIT-570","name":"Kite(पतंग ) 1.5rs","category":"Sports","moq":2,"maxLevel":2,"sellingPrice":3.0,"buyPrice":1.5,"reorderLevel":2},{"id":"KIT-571","name":"Kite(पतंग ) 2.5rs","category":"Sports","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":2.5,"reorderLevel":2},{"id":"KIT-572","name":"Kite(पतंग ) 3.6rs","category":"Sports","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":3.6,"reorderLevel":2},{"id":"KIT-573","name":"Kite thread Rs.21","category":"Sports","moq":2,"maxLevel":2,"sellingPrice":2.1,"buyPrice":3.0,"reorderLevel":2},{"id":"KIT-574","name":"Kite thread Rs.42","category":"Sports","moq":2,"maxLevel":2,"sellingPrice":4.2,"buyPrice":5.0,"reorderLevel":2},{"id":"A O-575","name":"A one Ball","category":"Sports","moq":2,"maxLevel":2,"sellingPrice":35.0,"buyPrice":25.0,"reorderLevel":2},{"id":"NOT-21","name":"Notebooks","category":"Stationery & Misc","moq":6,"maxLevel":5,"sellingPrice":0,"buyPrice":9.0,"reorderLevel":6},{"id":"BAL-85","name":"Ballpoint Pens","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":42.0,"reorderLevel":1},{"id":"BAL-86","name":"Ballpoint Pens","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":42.0,"reorderLevel":1},{"id":"BAL-87","name":"Ballpoint Pens","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":45.0,"reorderLevel":1},{"id":"GEL-88","name":"Gel Pens","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":40.0,"reorderLevel":1},{"id":"FOU-89","name":"Fountain Pens","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":30.0,"reorderLevel":1},{"id":"PEN-90","name":"Pencils (Nataraj)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":30.0,"reorderLevel":1},{"id":"PEN-91","name":"Pencils (Apsara)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":30.0,"reorderLevel":1},{"id":"PEN-92","name":"Pencils (DOMS)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":30.0,"reorderLevel":1},{"id":"PEN-93","name":"Pencils (Camel)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":30.0,"reorderLevel":1},{"id":"HIG-94","name":"Highlighters","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":15.0,"reorderLevel":1},{"id":"MAR-95","name":"Markers","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":17.0,"reorderLevel":1},{"id":"PER-96","name":"Permanent Markers","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":20.0,"reorderLevel":1},{"id":"WHI-97","name":"Whiteboard Markers","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":17.0,"reorderLevel":1},{"id":"PRI-98","name":"Printer Paper (A4, Letter)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":290.0,"reorderLevel":1},{"id":"GRA-99","name":"Graph Paper","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":15.0,"reorderLevel":1},{"id":"ENV-100","name":"Envelopes","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":10.0,"reorderLevel":1},{"id":"FIL-101","name":"File Folders","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"GLU-102","name":"Glue Stick","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"ERA-103","name":"Erasers","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"WHI-104","name":"Whiteboard & Markers","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"CHA-105","name":"Chalk & Blackboard","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"STA-151","name":"Staplers","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"STA-152","name":"Staplers Pins","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"FEV-170","name":"Fevicol","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"FAV-217","name":"Faviquic","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"NOT-301","name":"Notebooks (Hindi)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":1},{"id":"NOT-302","name":"Notebooks (English)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":1},{"id":"NOT-303","name":"Notebooks (Maths)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":1},{"id":"JEF-304","name":"Jeffy gel Pen","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"TEX-305","name":"Textla Ball pen","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"WOO-306","name":"Woody Ball pen","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"NAR-307","name":"Nartraj Gel pen","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"CEL-308","name":"Cello Ball pen","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"DOM-309","name":"Doms Erasers","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":3.0,"buyPrice":2.5,"reorderLevel":1},{"id":"WAT-314","name":"Water Colour Pen","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"DOM-315","name":"Domes Wax  Crayons colour","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"DOM-326","name":"Dome Scale","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":3.0,"buyPrice":2.5,"reorderLevel":1},{"id":"DOM-328","name":"Dome Trinangle Pencels","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.5,"reorderLevel":1},{"id":"DOM-329","name":"Domes Triangle Graphite Pencils","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.5,"reorderLevel":1},{"id":"APS-330","name":"Apsara Beauty Dark Penclis","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.0,"reorderLevel":1},{"id":"HER-331","name":"Heritage Graphite Pencils","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":3.0,"buyPrice":2.0,"reorderLevel":1},{"id":"G-L-332","name":"G-Lex Ball Pen (Blue)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.0,"reorderLevel":1},{"id":"G-L-333","name":"G-Lex Ball Pen (Black)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.0,"reorderLevel":1},{"id":"KAN-337","name":"Kangaro (1000 Staples)","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":12.0,"buyPrice":10.0,"reorderLevel":1},{"id":"STU-339","name":"Student Slate","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":20.0,"buyPrice":16.0,"reorderLevel":1},{"id":"SLA-340","name":"Slate Pencil","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":1},{"id":"A-S-348","name":"A-Size Rim","category":"Stationery & Misc","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":250.0,"reorderLevel":1},{"id":"WHI-433","name":"White Ink Correction (Whitener)","category":"Stationery & Misc","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"MEC-434","name":"Mechanical Pencil 0.7mm","category":"Stationery & Misc","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.5,"reorderLevel":2},{"id":"CAM-468","name":"Camlin Mechanical Pencil 0.5mm","category":"Stationery & Misc","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.5,"reorderLevel":2},{"id":"THR-477","name":"Three in one Notebook","category":"Stationery & Misc","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":15.0,"reorderLevel":2},{"id":"CEL-520","name":"Cello Pencil Lead 0.5mm (10pcs Tube)","category":"Stationery & Misc","moq":1,"maxLevel":50,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"CEL-521","name":"Cello Pencil Lead 0.7mm (10pcs Tube)","category":"Stationery & Misc","moq":1,"maxLevel":50,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":1},{"id":"PRA-522","name":"Practice map of India political |Pack of 100 Maps","category":"Stationery & Misc","moq":1,"maxLevel":20,"sellingPrice":2.0,"buyPrice":0.4,"reorderLevel":1},{"id":"CEL-523","name":"Cello Tape 1 Inch.","category":"Stationery & Misc","moq":1,"maxLevel":20,"sellingPrice":5.0,"buyPrice":3.5,"reorderLevel":1},{"id":"BAL-577","name":"Balloon","category":"Stationery & Misc","moq":2,"maxLevel":2,"sellingPrice":2.0,"buyPrice":1.0,"reorderLevel":2},{"id":"AMA-178","name":"Amaer prem","category":"Supari","moq":2,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.75,"reorderLevel":2},{"id":"CHU-226","name":"Chutki Mouth Freshener","category":"Supari","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.9,"reorderLevel":1},{"id":"MAR-227","name":"Marie supari","category":"Supari","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.96,"reorderLevel":1},{"id":"AUN-228","name":"Aunty No.1 Sweet Supari","category":"Supari","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.9,"reorderLevel":1},{"id":"CHA-490","name":"charri (mukhwas) 1rs","category":"Supari","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":2},{"id":"BIK-462","name":"Bikaji Soan Papdi, Mb, 450 g","category":"Sweets","moq":2,"maxLevel":2,"sellingPrice":90.0,"buyPrice":90.0,"reorderLevel":2},{"id":"SHR-463","name":"SHREE RAM Soan Papdi 200g","category":"Sweets","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":50.0,"reorderLevel":2},{"id":"COF-02","name":"Coffee","category":"Tea & Coffee","moq":12,"maxLevel":3,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":12},{"id":"ROY-03","name":"Royal Tea","category":"Tea & Coffee","moq":12,"maxLevel":0,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":12},{"id":"TEA-239","name":"Tea Leaves","category":"Tea & Coffee","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"NES-240","name":"Nescafe Sunrise Coffee","category":"Tea & Coffee","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"TAT-357","name":"Tata tea","category":"Tea & Coffee","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0,"reorderLevel":2},{"id":"NAV-358","name":"Navratan Tea (1/2kg)","category":"Tea & Coffee","moq":2,"maxLevel":2,"sellingPrice":95.0,"buyPrice":87.0,"reorderLevel":2},{"id":"BHA-494","name":"Bharat Tea 30ml","category":"Tea & Coffee","moq":1,"maxLevel":10,"sellingPrice":0,"buyPrice":8.0,"reorderLevel":1},{"id":"ASS-533","name":"Assam tea","category":"Tea & Coffee","moq":1,"maxLevel":10,"sellingPrice":173.0,"buyPrice":175.0,"reorderLevel":1},{"id":"TAJ-552","name":"Taj Mahal-250gm","category":"Tea & Coffee","moq":1,"maxLevel":2,"sellingPrice":170.0,"buyPrice":170.0,"reorderLevel":1},{"id":"RED-553","name":"Red Label tea-250 gm","category":"Tea & Coffee","moq":1,"maxLevel":2,"sellingPrice":127.0,"buyPrice":127.0,"reorderLevel":1},{"id":"30 -76","name":"30 No Beedi (३० नं बीड़ी)","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":30.0,"buyPrice":27.0,"reorderLevel":1},{"id":"ऑफि-77","name":"ऑफिसर बीड़ी Officer Bidi","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":30.0,"buyPrice":27.0,"reorderLevel":1},{"id":"GOL-78","name":"Gold Flake Kings","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":100.0,"buyPrice":87.0,"reorderLevel":1},{"id":"ADV-79","name":"Advance cigrate","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":100.0,"buyPrice":84.0,"reorderLevel":1},{"id":"CLA-80","name":"Classic Regular, Milds","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"FOU-81","name":"Four Square Regular","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"RAJ-82","name":"Rajnigandha (रजनीगंधा)","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":25.0,"buyPrice":23.0,"reorderLevel":1},{"id":"TAN-83","name":"Tansen","category":"Tobacco","moq":1,"maxLevel":0,"sellingPrice":5.0,"buyPrice":4.2,"reorderLevel":1},{"id":"VIM-84","name":"Vimal","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":5.0,"buyPrice":4.2,"reorderLevel":1},{"id":"GAN-183","name":"Ganesh Chap","category":"Tobacco","moq":2,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.6,"reorderLevel":2},{"id":"DES-184","name":"Desai beedi","category":"Tobacco","moq":2,"maxLevel":1,"sellingPrice":30.0,"buyPrice":27.0,"reorderLevel":2},{"id":"O2 -185","name":"O2 Beedi","category":"Tobacco","moq":2,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.5,"reorderLevel":2},{"id":"SIG-199","name":"Signature","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":8.9,"reorderLevel":1},{"id":"MIR-200","name":"Miraj","category":"Tobacco","moq":1,"maxLevel":1,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":1},{"id":"BAH-416","name":"Bahar (Pan masala)","category":"Tobacco","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"O2 -466","name":"O2 Beedi (10rs)","category":"Tobacco","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.1,"reorderLevel":2},{"id":"CHO-525","name":"Choti Bharat Beedi(छोटी भरत बीड़ी)","category":"Tobacco","moq":1,"maxLevel":20,"sellingPrice":30.0,"buyPrice":25.0,"reorderLevel":1},{"id":"GOL-528","name":"Gold Flake INDIE MINT","category":"Tobacco","moq":1,"maxLevel":20,"sellingPrice":100.0,"buyPrice":86.0,"reorderLevel":1},{"id":"JEL-191","name":"Jelly","category":"Toffee","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.9,"reorderLevel":1},{"id":"IME-192","name":"Imeli","category":"Toffee","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.9,"reorderLevel":1},{"id":"NAR-193","name":"Narngi","category":"Toffee","moq":1,"maxLevel":1,"sellingPrice":2.0,"buyPrice":1.5,"reorderLevel":1},{"id":"ECL-194","name":"Eclairs toffee","category":"Toffee","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.5,"reorderLevel":1},{"id":"PUL-224","name":"PULSE KACHCHA AAM TOFFEE","category":"Toffee","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.9,"reorderLevel":1},{"id":"CEN-225","name":"Center Fresh","category":"Toffee","moq":1,"maxLevel":1,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":1},{"id":"CAN-287","name":"Candies","category":"Toffee","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"KOP-377","name":"Kopiko","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.8,"reorderLevel":2},{"id":"JUI-399","name":"Juicy Jelly","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":0,"buyPrice":0.8,"reorderLevel":2},{"id":"MER-504","name":"Merlin","category":"Toffee","moq":1,"maxLevel":15,"sellingPrice":0,"buyPrice":205.0,"reorderLevel":1},{"id":"PAR-550","name":"Parle Bigger Mango Bite Candy","category":"Toffee","moq":1,"maxLevel":2,"sellingPrice":50.0,"buyPrice":45.0,"reorderLevel":1},{"id":"PAR-558","name":"Parle Melody Chocolate  Packet","category":"Toffee","moq":1,"maxLevel":2,"sellingPrice":95.0,"buyPrice":90.0,"reorderLevel":1},{"id":"MAS-578","name":"Masala Aam Papad","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":1.0,"reorderLevel":2},{"id":"TIL-579","name":"Til Laddu","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":1.0,"reorderLevel":2},{"id":"DIS-580","name":"Disposable Plastic Spoon Packet","category":"Disposal","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":19.0,"reorderLevel":2},{"id":"JEE-581","name":"Jeera patta(3.5)","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":3.0,"reorderLevel":2},{"id":"BHO-582","name":"Bhogla","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.75,"reorderLevel":2},{"id":"CRE-583","name":"Cream Roll","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":3.5,"reorderLevel":2},{"id":"DHA-584","name":"Dhaaga (धागा)","category":"Sewing","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.0,"reorderLevel":2},{"id":"DHA-585","name":"Dhanna Seth 2rs","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":2.0,"buyPrice":1.5,"reorderLevel":2},{"id":"GOL-586","name":"Gold Stag Cigarette","category":"Tobacco","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":8.166,"reorderLevel":2},{"id":"MAK-587","name":"Makhana Sugar Balls","category":"Pooja Samagri","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":1.0,"reorderLevel":2},{"id":"LAL-588","name":"LaLa JI Namkeen( Mixcher 500gm)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":59.0,"reorderLevel":2},{"id":"RUB-589","name":"Rubber Ball","category":"Sports","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.5,"reorderLevel":2},{"id":"SUG-590","name":"Sugar Buru(Powder Sugar/Sakkare)","category":"Food","moq":2,"maxLevel":2,"sellingPrice":42.0,"buyPrice":34.0,"reorderLevel":2},{"id":"DAB-591","name":"Dabur Amla Sarso Hair Oil 450ml","category":"Hair Oil","moq":2,"maxLevel":2,"sellingPrice":195.0,"buyPrice":140.0,"reorderLevel":2},{"id":"BAJ-592","name":"BAJAJ Popular 1000 W Dry Iron (White)","category":"Electrical","moq":2,"maxLevel":2,"sellingPrice":1540.0,"buyPrice":599.0,"reorderLevel":2},{"id":"MIR-593","name":"Miraj Premium Baked Toast 250g","category":"Food","moq":2,"maxLevel":2,"sellingPrice":59.0,"buyPrice":29.5,"reorderLevel":2},{"id":"MAA-594","name":"Maaza Tetra Drink 10ml","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":9.0,"buyPrice":7.77,"reorderLevel":2},{"id":"MAS-595","name":"Masala Wafers 16gm(Balaji)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"SNA-596","name":"Snack'em Chokdi masala(Balaji 22gm)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.25,"reorderLevel":2},{"id":"MAG-597","name":"Maggi Masala a Magic Rs 5","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"AMU-598","name":"Amul Lassi 250ml(Calcium","category":"Dairy product","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":23.0,"reorderLevel":2},{"id":"BRI-599","name":"Britannia JimJam 138g","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":2},{"id":"MON-600","name":"Monginis Veg Cakes - Chocolate, 60 g Pouch","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":20.0,"reorderLevel":2},{"id":"CAD-601","name":"Cadbury Creamy Milk Choco Bar 23g","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"NIL-602","name":"Nilon's Ginger Garlic Paste","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":47.0,"buyPrice":23.5,"reorderLevel":2},{"id":"RAI-603","name":"Rai red-100gm","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":19.0,"reorderLevel":2},{"id":"RAI-604","name":"Rai red-500gm","category":"Spices","moq":2,"maxLevel":2,"sellingPrice":88.0,"buyPrice":77.0,"reorderLevel":2},{"id":"PAR-605","name":"Parle Kimi-245g","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":36.0,"reorderLevel":2},{"id":"BRI-606","name":"Britannia Gobbles Fruit Cake, 35g","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":22.0,"reorderLevel":2},{"id":"BRI-607","name":"Britannia pure n egg cake","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":21.0,"reorderLevel":2},{"id":"CAD-608","name":"Cadbury 5 Star Chocolate 5rs","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.05,"reorderLevel":2},{"id":"SAT-609","name":"Satmola Combination of Taste","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.75,"reorderLevel":2},{"id":"BOU-610","name":"Bournvita Chocolate Health Drink - , 75 g Pouch","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":23.0,"reorderLevel":2},{"id":"HEL-611","name":"Hello Fresh","category":"Mouth Freshener","moq":2,"maxLevel":2,"sellingPrice":1.0,"buyPrice":0.75,"reorderLevel":2},{"id":"CHE-612","name":"Cheery Candy 1rs","category":"Mouth Freshener","moq":2,"maxLevel":2,"sellingPrice":0.8,"buyPrice":50.0,"reorderLevel":2},{"id":"WHI-613","name":"Whisper Choice Sanitary Pads - XL, 6 pcs","category":"Health & Hygiene","moq":2,"maxLevel":2,"sellingPrice":0.8,"buyPrice":40.0,"reorderLevel":2},{"id":"TAT-614","name":"Tata Tea Premium 250g","category":"Tea & Coffee","moq":2,"maxLevel":2,"sellingPrice":120.0,"buyPrice":102.0,"reorderLevel":2},{"id":"KNO-615","name":"Knorr Hot & Sour Veg Soup  12g","category":"Soup & Popcorn","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"KNO-616","name":"Knorr Sweet Corn Veg 10.5g Soup","category":"Soup & Popcorn","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"KNO-617","name":"Knorr Tomato Chatpata 14.5g Soup","category":"Soup & Popcorn","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"BUT-618","name":"Butter Popcorn 32g","category":"Soup & Popcorn","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.0,"reorderLevel":2},{"id":"TOM-619","name":"Tomato Soup 50g","category":"Soup & Popcorn","moq":2,"maxLevel":2,"sellingPrice":56.0,"buyPrice":50.0,"reorderLevel":2},{"id":"HOT-620","name":"Hot & Sour veg Soup  50g","category":"Soup & Popcorn","moq":2,"maxLevel":2,"sellingPrice":56.0,"buyPrice":50.0,"reorderLevel":2},{"id":"BIK-621","name":"Bikaneri Shreeram Khatta Meetha( 800 gm)","category":"Namkeen","moq":2,"maxLevel":2,"sellingPrice":230.0,"buyPrice":99.0,"reorderLevel":2},{"id":"VAS-622","name":"Vaseline 21gm","category":"Creams & Lotions","moq":2,"maxLevel":2,"sellingPrice":65.0,"buyPrice":60.0,"reorderLevel":2},{"id":"PAT-623","name":"Patanjali Honey 250gm","category":"Health & Hygiene","moq":2,"maxLevel":2,"sellingPrice":110.0,"buyPrice":75.0,"reorderLevel":2},{"id":"REA-624","name":"Real Fruit Power Mixed Fruit Juice","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.4,"reorderLevel":2},{"id":"GOD-625","name":"Godrej Ezee Liquid Detergent 235ml","category":"Detergent","moq":2,"maxLevel":2,"sellingPrice":70.0,"buyPrice":60.0,"reorderLevel":2},{"id":"BRO-626","name":"Brooke Bond Present Taaza Tea, Black Tea, 250 g","category":"Tea & Coffee","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":47.0,"reorderLevel":2},{"id":"PUL-627","name":"Pulse candy Golmol Imli candy","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":56.0,"buyPrice":40.0,"reorderLevel":2},{"id":"CEN-628","name":"Center Fruit, Strawberry Jar","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":185.0,"buyPrice":0.8,"reorderLevel":2},{"id":"DAB-629","name":"Dabur Red Toothpaste - 25g (20rs)","category":"Personal Care & Hygiene","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":18.0,"reorderLevel":2},{"id":"PAR-630","name":"Parle Kismi Toffee Jar","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":200.0,"buyPrice":185.0,"reorderLevel":2},{"id":"ALP-631","name":"Alpenliebe Toffee Jar","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":200.0,"buyPrice":185.0,"reorderLevel":2},{"id":"VIC-632","name":"Vicks Cough Drops Double Power Candy - Menthol, Honey & Ginger","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":200.0,"buyPrice":185.0,"reorderLevel":2},{"id":"CRI-633","name":"Crispy Fried Green Masala Peas(matar)","category":"Supari","moq":2,"maxLevel":2,"sellingPrice":80.0,"buyPrice":50.0,"reorderLevel":2},{"id":"DOU-634","name":"Double Stiff Broom (फुल झाड़ू)","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":60.0,"buyPrice":45.0,"reorderLevel":2},{"id":"BIS-635","name":"Bisky Bites Bourbon Sandwich Biscuits 150gm","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":33.0,"buyPrice":25.0,"reorderLevel":2},{"id":"MON-636","name":"Monginis Fruit Bar Cake Veg 100g","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":20.0,"reorderLevel":2},{"id":"STR-637","name":"Streax Insta Shampoo Hair Colour (Dark Brown 3) 150ml","category":"Hair color","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":24.0,"reorderLevel":2},{"id":"STR-638","name":"Streax Insta Shampoo Hair Colour , Natural Brown (BRW)15ML","category":"Hair color","moq":2,"maxLevel":2,"sellingPrice":28.0,"buyPrice":14.0,"reorderLevel":2},{"id":"GOD-639","name":"Godrej Expert Rich Creme Hair Colour 20gm","category":"Hair color","moq":2,"maxLevel":2,"sellingPrice":40.0,"buyPrice":33.0,"reorderLevel":2},{"id":"NAP-640","name":"Napthalene Balls (Pantry | Kapoor goli for Clothes)","category":"Cleaning Tools","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":7.5,"reorderLevel":2},{"id":"CAD-641","name":"Cadbury Gems 7.9 Gm","category":"Toffee","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.1,"reorderLevel":2},{"id":"NES-642","name":"NESCAFE Classic Instant Coffee Powder-10rs","category":"Tea & Coffee","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"CHI-643","name":"Chik Easy Shampoo Based Hair Colour (15ml) 20rs","category":"Hair color","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":10.0,"reorderLevel":2},{"id":"GIL-644","name":"Gillette razor (10rs)","category":"Personal Care","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.5,"reorderLevel":2},{"id":"TRU-645","name":"True-Ally 1000Pcs Price Stickers","category":"Stationery & Misc","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":13.0,"reorderLevel":2},{"id":"FEV-646","name":"Fevi Gum Lime Fragrance","category":"Stationery & Misc","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.2,"reorderLevel":2},{"id":"CAD-647","name":"Cadbury 5(Five) Star Chocolate 10rs","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.0,"reorderLevel":2},{"id":"SAR-648","name":"Saras Ghee in a 500 gm","category":"Dairy product","moq":2,"maxLevel":2,"sellingPrice":277.0,"buyPrice":1.0,"reorderLevel":2},{"id":"SLI-649","name":"Slice Mango Tetra (40pc@rs-10)","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":7.5,"reorderLevel":2},{"id":"MAG-650","name":"Maggi Masala Noodles 280g","category":"Fast Food","moq":2,"maxLevel":2,"sellingPrice":55.0,"buyPrice":53.0,"reorderLevel":2},{"id":"BIK-651","name":"Bikaji Mobile Chowpati Bhelpuri, 110 g","category":"Fast Food","moq":2,"maxLevel":2,"sellingPrice":47.0,"buyPrice":23.5,"reorderLevel":2},{"id":"SHU-652","name":"Shubhkart Tejas Prayer Candle","category":"Home care","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":2.7,"reorderLevel":2},{"id":"JAY-653","name":"Jayanti Nimbo Masala Soda - Banta Jeera, 160 ml","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":8.0,"reorderLevel":2},{"id":"DUK-654","name":"Dukes Bourbon Premium Chocolate Flavoured Sandwich Biscuit 125g","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":25.0,"buyPrice":16.5,"reorderLevel":2},{"id":"MAN-655","name":"Mankind Gas-O-Fast For Relieving Acidity, Active Jeera- 5 g","category":"OTC Medicines & First Aid","moq":2,"maxLevel":2,"sellingPrice":56.0,"buyPrice":40.0,"reorderLevel":2},{"id":"ANJ-656","name":"Anjali brand Rajgira Atta 200gm","category":"Fast","moq":2,"maxLevel":2,"sellingPrice":30.0,"buyPrice":24.0,"reorderLevel":2},{"id":"BRI-657","name":"Britannia Bourbon, the Original Choco Creme Sandwich Biscuit, 50 G","category":"Biscuit","moq":2,"maxLevel":2,"sellingPrice":10.0,"buyPrice":9.4,"reorderLevel":2},{"id":"DUK-658","name":"Dukes Waffy Vanilla Wafers 55g","category":"Chocolate","moq":2,"maxLevel":2,"sellingPrice":45.0,"buyPrice":22.5,"reorderLevel":2},{"id":"WEI-659","name":"Weikfield Falooda Mix 200 g","category":"Packaged Foods & Snacks","moq":2,"maxLevel":2,"sellingPrice":90.0,"buyPrice":45.0,"reorderLevel":2},{"id":"KIN-660","name":"Kinley water 1ltr","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":18.0,"buyPrice":9.0,"reorderLevel":2},{"id":"BOU-661","name":"Bournvita Chocolate Health Drink - ,5 Rs Pouch","category":"Beverages","moq":2,"maxLevel":2,"sellingPrice":5.0,"buyPrice":4.5,"reorderLevel":2},{"id":"SOY-662","name":"Soyabadi (Soyabeen)75rs/KG","category":"Packaged Foods & Snacks","moq":2,"maxLevel":2,"sellingPrice":100.0,"buyPrice":75.0,"reorderLevel":2},{"id":"PIC-663","name":"Pichkari (Green)144/12","category":"Holi","moq":2,"maxLevel":2,"sellingPrice":15.0,"buyPrice":12.0,"reorderLevel":2},{"id":"PIC-664","name":"Pichkari (Blue)168/12","category":"Holi","moq":2,"maxLevel":2,"sellingPrice":20.0,"buyPrice":14.0,"reorderLevel":2},{"id":"GUL-665","name":"Gulal Packet","category":"Holi","moq":2,"maxLevel":2,"sellingPrice":90.0,"buyPrice":10.0,"reorderLevel":2},{"id":"WAT-666","name":"Water balloons","category":"Holi","moq":2,"maxLevel":2,"sellingPrice":50.0,"buyPrice":45.0,"reorderLevel":2},{"id":"-667","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-668","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-669","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-670","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-671","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-672","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-673","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-674","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-675","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-676","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-677","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-678","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-679","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-680","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-681","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-682","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-683","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-684","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-685","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-686","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-687","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-688","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-689","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-690","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-691","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-692","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-693","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-694","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-695","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-696","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-697","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-698","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-699","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-700","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-701","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-702","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-703","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-704","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-705","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-706","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-707","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-708","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-709","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-710","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-711","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-712","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-713","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-714","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-715","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-716","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-717","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-718","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-719","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-720","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-721","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-722","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-723","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-724","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-725","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-726","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-727","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-728","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-729","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-730","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-731","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-732","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-733","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-734","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-735","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-736","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-737","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-738","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-739","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-740","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-741","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-742","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-743","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-744","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-745","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-746","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1},{"id":"-747","name":"","category":"General","moq":1,"maxLevel":1,"sellingPrice":0,"buyPrice":0,"reorderLevel":1}];
+const ALL_CATS = ["Baby & Kids Care", "Beverages", "Biscuit", "Chocolate", "Cleaning Tools", "Crackers", "Creams & Lotions", "Dairy product", "Dal", "Detergent", "Disposal", "Dry Fruits & Nuts", "Edible Oils & Ghee", "Electrical", "Fast", "Fast Food", "Food", "General", "Groceries & Staples", "Hair Oil", "Hair color", "Handwash", "Health & Hygiene", "Holi", "Home care", "Mouth Freshener", "Namkeen", "OTC Medicines & First Aid", "Packaged Foods & Snacks", "Packaged Snacks", "Perfume", "Personal Care", "Personal Care & Hygiene", "Pooja Samagri", "Rice", "Sauce", "Seasonal Items", "Sewing", "Shampoo", "Shaving Razor", "Soap", "Soup & Popcorn", "Spices", "Sports", "Stationery & Misc", "Supari", "Sweets", "Tea & Coffee", "Tobacco", "Toffee"];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let items = lsLoad('dg5_items', SEED);
+let purchases = lsLoad('dg5_purchases', []);
+let sales = lsLoad('dg5_sales', []);
+let isDark = lsLoad('dg5_dark', false);
+let iPage = 0; const PER = 50;
+let editId = null, delId = null;
+let chartInstances = {};
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+function lsLoad(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+function lsSave(k,d){try{localStorage.setItem(k,JSON.stringify(d));}catch{}}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+const fmt=(n)=>n===null||n===undefined||isNaN(n)?'—':'₹'+parseFloat(n).toFixed(2);
+const fmtK=(n)=>Math.abs(n)>=1000?'₹'+(n/1000).toFixed(1)+'K':fmt(n);
+const today=()=>new Date().toISOString().slice(0,10);
+const dAgo=(n)=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);}
+const pClass=(v)=>v>0?'style="color:var(--green);font-weight:700"':v<0?'style="color:var(--red);font-weight:700"':'style="color:var(--text3)"';
+
+function badge(c,t){return`<span class="badge" style="background:${c}18;color:${c};border:1px solid ${c}30">${t}</span>`;}
+function pill(c,t){return`<span class="pill" style="background:${c}15;color:${c}">${t}</span>`;}
+
+// ── DERIVED ───────────────────────────────────────────────────────────────────
+function getLPP(){
+  const m={};
+  [...purchases].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(p=>{m[p.sku]=+p.purchasePrice;});
+  return m;
+}
+function getStock(){
+  const m={};items.forEach(i=>{m[i.id]=0;});
+  purchases.forEach(p=>{m[p.sku]=(m[p.sku]||0)+ +p.qty;});
+  sales.forEach(s=>{m[s.sku]=(m[s.sku]||0)- +s.qty;});
+  return m;
+}
+function enrich(){
+  const lpp=getLPP(),sm=getStock();
+  return items.map(i=>{
+    const st=sm[i.id]??0,lb=lpp[i.id]??i.buyPrice??0,sp=i.sellingPrice||0;
+    const profit=sp-lb,pct=lb>0?((profit/lb)*100).toFixed(1):null;
+    return{...i,stock:st,lastBuy:lb,sellP:sp,profit,profitPct:pct,needsReorder:st<=(i.reorderLevel||1),shortage:Math.max(0,(i.reorderLevel||1)-st)};
+  });
+}
+function calcStats(enr,fp,fs){
+  const lpp=getLPP();
+  const rev=fs.reduce((s,sl)=>{const it=enr.find(i=>i.id===sl.sku);return s+(+sl.salePrice||it?.sellP||0)*+sl.qty;},0);
+  const cogs=fs.reduce((s,sl)=>s+(lpp[sl.sku]||0)*+sl.qty,0);
+  const pv=fp.reduce((s,p)=>s+ +p.qty*+p.purchasePrice,0);
+  const sv=enr.reduce((s,i)=>s+i.stock*i.lastBuy,0);
+  const ri=enr.filter(i=>i.needsReorder);
+  return{ri:ri.length,sv,rev,cogs,profit:rev-cogs,pv,margin:rev>0?((rev-cogs)/rev*100).toFixed(1):0};
+}
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  isDark=!isDark;lsSave('dg5_dark',isDark);applyTheme();
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch{}});
+  chartInstances={};
+  const cur=document.querySelector('.nav-item.active');
+  if(cur){const pg=cur.getAttribute('onclick').match(/goPage\('(\w+)'/)?.[1];if(pg)renderPage(pg);}
+}
+function applyTheme(){
+  document.body.classList.toggle('dark',isDark);
+  document.getElementById('theme-icon').textContent=isDark?'☀️':'🌙';
+  document.getElementById('theme-label').textContent=isDark?'Light Mode':'Dark Mode';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.background=type==='ok'?'var(--green)':'var(--red)';
+  el.style.display='block';
+  setTimeout(()=>{el.style.display='none';},3000);
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function goPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el)el.classList.add('active');
+  const titles={dashboard:'Dashboard',items:'Item Master',purchase:'Purchase',sales:'Sales',demand:'Demand Analysis',reorder:'Reorder Sheet',reports:'Reports & P&L'};
+  document.getElementById('tb-title').textContent=titles[name]||name;
+  renderPage(name);
+  updateTopbar();
+}
+function renderPage(name){
+  if(name==='dashboard')renderDashboard();
+  if(name==='items')renderItems();
+  if(name==='purchase'){renderPurchases();renderPSummary();renderPurchaseTrend();}
+  if(name==='sales'){renderSales();renderSSummary();renderSalesTrend();}
+  if(name==='demand')renderDemand();
+  if(name==='reorder')renderReorder();
+  if(name==='reports')renderReports();
+}
+function updateTopbar(){
+  const enr=enrich(),st=calcStats(enr,purchases,sales);
+  document.getElementById('tb-sub').textContent=`${items.length} SKUs · ${st.ri} reorder needed`;
+  document.getElementById('tb-stock').innerHTML=`💰 Stock: <b>${fmtK(st.sv)}</b>`;
+  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  const rb=document.getElementById('tb-reorder-btn');
+  if(st.ri>0){rb.textContent=`🔔 ${st.ri} Reorder`;rb.style.display='block';}else rb.style.display='none';
+  document.getElementById('nb-reorder').textContent=st.ri;
+  document.getElementById('nb-reorder').style.display=st.ri>0?'block':'none';
+}
+
+// ── CHART HELPER ──────────────────────────────────────────────────────────────
+function mkChart(id,config){
+  if(chartInstances[id]){try{chartInstances[id].destroy();}catch{}}
+  const canvas=document.getElementById(id);
+  if(!canvas)return;
+  const isDarkMode=document.body.classList.contains('dark');
+  const gridColor=isDarkMode?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  const textColor=isDarkMode?'#64748b':'#94a3b8';
+  if(config.options?.scales){
+    Object.values(config.options.scales).forEach(sc=>{
+      if(sc.grid)sc.grid.color=gridColor;
+      if(sc.ticks)sc.ticks.color=textColor;
+    });
+  }
+  if(config.options?.plugins?.legend?.labels)config.options.plugins.legend.labels.color=textColor;
+  chartInstances[id]=new Chart(canvas,config);
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const enr=enrich(),st=calcStats(enr,purchases,sales);
+  // Stat cards
+  document.getElementById('dash-stats').innerHTML=[
+    ['var(--blue)',st.ri===0?items.length:items.length,'Total SKUs','📦',`${st.ri} need reorder`],
+    [st.profit>=0?'var(--green)':'var(--red)',fmt(st.profit),'Gross Profit','💰',`Margin: ${st.margin}%`],
+    ['var(--yellow)',fmt(st.rev),'Sales Revenue','📈',`${sales.length} transactions`],
+    ['var(--blue)',fmt(st.pv),'Total Purchased','🛒',`${purchases.length} entries`],
+    ['var(--green)',fmt(st.sv),'Stock Value','💎',`${enr.filter(i=>i.stock>0).length} items stocked`],
+    ['var(--red)',st.ri,'Need Reorder','🔔',`${enr.filter(i=>i.stock<=0).length} out of stock`],
+  ].map(([c,v,l,ic,sub])=>`<div class="stat-card" style="border-top:3px solid ${c}"><div class="stat-icon">${ic}</div><div class="stat-val" style="color:${c}">${v}</div><div class="stat-label">${l}</div><div class="stat-sub">${sub}</div><div class="stat-glow" style="background:${c}"></div></div>`).join('');
+  // Reorder
+  const ri=enr.filter(i=>i.needsReorder).slice(0,6);
+  document.getElementById('dash-reorder').innerHTML=ri.length?ri.map(i=>`<div class="alert-row ${i.stock<=0?'alert-urgent':'alert-low'}"><div><div style="font-size:12px;font-weight:600">${i.name.slice(0,32)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${i.id} · Stock: <b style="color:var(--red)">${i.stock}</b></div></div>${i.stock<=0?badge('var(--red)','OUT'):badge('var(--yellow)','LOW')}</div>`).join(''):`<div class="empty-state" style="padding:20px"><div class="empty-icon">✅</div><div class="empty-text">All stocked up!</div></div>`;
+  // Top selling
+  const dm={};sales.forEach(s=>{dm[s.sku]=(dm[s.sku]||0)+ +s.qty;});
+  const topS=Object.entries(dm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxQ=topS[0]?.[1]||1;
+  document.getElementById('dash-top-sell').innerHTML=topS.length?topS.map(([sku,qty],i)=>{
+    const it=items.find(x=>x.id===sku);const c=i<2?'var(--red)':i<4?'var(--yellow)':'var(--blue)';
+    return`<div class="demand-row"><div class="demand-rank" style="background:${c}18;color:${c}">${i+1}</div><div class="demand-info"><div class="demand-name">${it?.name?.slice(0,28)||sku}</div><div class="demand-bar-bg"><div class="demand-fill" style="width:${(qty/maxQ*100).toFixed(0)}%;background:${c}"></div></div></div><div class="demand-qty" style="color:${c}">${qty}</div></div>`;
+  }).join(''):`<div class="empty-state" style="padding:20px"><div class="empty-text">Record sales to see demand</div></div>`;
+  // Recent
+  const rp=[...purchases].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  document.getElementById('dash-rec-purchases').innerHTML=rp.map((p,i)=>`<tr ${i%2?'class="tr-alt"':''}><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${p.date}</td><td>${badge('var(--blue)',p.sku)}</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${p.itemName}</td><td style="font-weight:600">${p.qty}</td><td>${fmt(p.purchasePrice)}</td><td style="color:var(--yellow);font-weight:700">${fmt(p.qty*p.purchasePrice)}</td></tr>`).join('')||`<tr><td colspan="6" style="color:var(--text3);padding:16px;text-align:center">No purchases yet</td></tr>`;
+  const enr2=enrich(),lpp=getLPP();
+  const rs=[...sales].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  document.getElementById('dash-rec-sales').innerHTML=rs.map((s,i)=>{const it=enr2.find(x=>x.id===s.sku);const pr=((+s.salePrice||it?.sellP||0)-(it?.lastBuy||0))*+s.qty;return`<tr ${i%2?'class="tr-alt"':''}><td style="font-family:'JetBrains Mono',monospace;font-size:10px">${s.date}</td><td>${badge('var(--green)',s.sku)}</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${s.itemName}</td><td>${s.qty}</td><td style="color:var(--yellow);font-weight:700">${fmt(+s.qty*(+s.salePrice||0))}</td><td ${pClass(pr)}>${fmt(pr)}</td></tr>`;}).join('')||`<tr><td colspan="6" style="color:var(--text3);padding:16px;text-align:center">No sales yet</td></tr>`;
+  updateCharts();
+}
+
+function updateCharts(){
+  const days=+document.getElementById('chart-period')?.value||7;
+  // Sales & Profit line chart
+  const labels=[],salesData=[],profitData=[];
+  const enr2=enrich();
+  for(let i=days-1;i>=0;i--){
+    const d=dAgo(i);labels.push(d.slice(5));
+    const ds=sales.filter(s=>s.date===d);
+    const rev=ds.reduce((s,sl)=>{const it=enr2.find(x=>x.id===sl.sku);return s+(+sl.salePrice||it?.sellP||0)*+sl.qty;},0);
+    const prof=ds.reduce((s,sl)=>{const it=enr2.find(x=>x.id===sl.sku);return s+((+sl.salePrice||it?.sellP||0)-(it?.lastBuy||0))*+sl.qty;},0);
+    salesData.push(+rev.toFixed(2));profitData.push(+prof.toFixed(2));
+  }
+  mkChart('chart-sales',{type:'line',data:{labels,datasets:[{label:'Revenue',data:salesData,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.1)',fill:true,tension:.4,pointRadius:3},{label:'Profit',data:profitData,borderColor:'#38a169',backgroundColor:'rgba(56,161,105,.1)',fill:true,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{grid:{},ticks:{callback:v=>'₹'+v}}}}});
+  // Category stock value donut
+  const catMap={};enr2.forEach(i=>{const c=i.category;catMap[c]=(catMap[c]||0)+i.stock*i.lastBuy;});
+  const topCats=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const colors=['#3b82f6','#38a169','#e53e3e','#d97706','#7c3aed','#ea580c','#06b6d4','#ec4899'];
+  mkChart('chart-cat',{type:'doughnut',data:{labels:topCats.map(([c])=>c),datasets:[{data:topCats.map(([,v])=>+v.toFixed(0)),backgroundColor:colors,borderWidth:2,borderColor:'transparent'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}}});
+}
+
+// ── ITEMS ─────────────────────────────────────────────────────────────────────
+function onItemSearch(){
+  const q=(document.getElementById('item-search').value||'').toLowerCase().trim();
+  const dd=document.getElementById('search-dropdown');
+  if(q.length<1){dd.style.display='none';renderItems();return;}
+  const enr=enrich();
+  const res=enr.filter(i=>i.name.toLowerCase().includes(q)||i.id.toLowerCase().includes(q)||i.category.toLowerCase().includes(q)).slice(0,8);
+  if(res.length){
+    dd.style.display='block';
+    dd.innerHTML=res.map(i=>`<div class="search-item" onclick="selectSearchItem('${i.id}')"><span class="search-sku">${i.id}</span><div><div class="search-name">${i.name}</div><div class="search-cat">${i.category} · Stock: ${i.stock}</div></div></div>`).join('');
+  }else{dd.style.display='block';dd.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">No items found</div>';}
+  renderItems();
+}
+function selectSearchItem(id){
+  const el=document.getElementById('item-search');
+  const it=items.find(i=>i.id===id);
+  if(it)el.value=it.name;
+  document.getElementById('search-dropdown').style.display='none';
+  renderItems();
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.search-wrap'))document.querySelectorAll('.search-dropdown').forEach(d=>d.style.display='none');
+});
+
+function renderItems(){
+  const enr=enrich();
+  const q=(document.getElementById('item-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('item-cat-f')?.value||'All';
+  const status=document.getElementById('item-status-f')?.value||'all';
+  const filtered=enr.filter(i=>{
+    if(cat!=='All'&&i.category!==cat)return false;
+    if(q&&!i.name.toLowerCase().includes(q)&&!i.id.toLowerCase().includes(q)&&!i.category.toLowerCase().includes(q))return false;
+    if(status==='low'&&!(i.needsReorder&&i.stock>0))return false;
+    if(status==='out'&&i.stock!==0)return false;
+    if(status==='ok'&&i.needsReorder)return false;
+    return true;
+  });
+  document.getElementById('item-count').textContent=`${filtered.length} / ${items.length} items`;
+  const pages=Math.ceil(filtered.length/PER)||1;
+  if(iPage>=pages)iPage=0;
+  const paged=filtered.slice(iPage*PER,(iPage+1)*PER);
+  document.getElementById('items-tbody').innerHTML=paged.length?paged.map((it,i)=>{
+    const sc=it.stock<=0?'var(--red)':it.needsReorder?'var(--yellow)':'var(--green)';
+    const sb=it.stock<=0?badge('var(--red)','OUT'):it.needsReorder?badge('var(--yellow)','LOW'):badge('var(--green)','OK');
+    return`<tr ${i%2?'class="tr-alt"':''}><td>${badge('var(--blue)',it.id)}</td><td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;font-weight:500">${it.name}</td><td>${pill('var(--purple)',it.category)}</td><td>${it.sellP?fmt(it.sellP):'—'}</td><td>${it.lastBuy?fmt(it.lastBuy):'—'}</td><td ${pClass(it.profit)}>${it.lastBuy&&it.sellP?fmt(it.profit):'—'}</td><td ${pClass(it.profit)}>${it.profitPct?it.profitPct+'%':'—'}</td><td style="color:${sc};font-weight:700">${it.stock}</td><td>${sb}</td><td><button class="btn-sm" style="background:var(--blue);margin-right:3px" onclick="openEditModal('${it.id}')">✏</button><button class="btn-sm btn-danger" onclick="openDelModal('${it.id}')">🗑</button></td></tr>`;
+  }).join(''):`<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">No items found</div><div class="empty-sub">Try a different search or filter</div></div></td></tr>`;
+  // Pagination
+  const pg=document.getElementById('items-pg');
+  pg.innerHTML=pages>1?`<button class="pg-btn" onclick="chPg(-1)" ${iPage===0?'disabled':''}>◀ Prev</button><span style="color:var(--text3);font-size:12px">Page ${iPage+1} / ${pages}</span><button class="pg-btn" onclick="chPg(1)" ${iPage>=pages-1?'disabled':''}>Next ▶</button>`:'';
+}
+function chPg(d){iPage+=d;renderItems();}
+
+// ── MODAL: ADD/EDIT ───────────────────────────────────────────────────────────
+function openAddModal(){
+  editId=null;
+  document.getElementById('modal-title').textContent='📦 Add New Item';
+  document.getElementById('modal-save-btn').textContent='✓ Add Item';
+  ['m-id','m-name','m-sell','m-buy','m-moq','m-rl'].forEach(id=>document.getElementById(id).value=id==='m-sell'||id==='m-buy'?'0':id==='m-moq'?'1':id==='m-rl'?'2':'');
+  document.getElementById('m-id').disabled=false;
+  document.getElementById('item-modal').classList.add('open');
+}
+function openEditModal(id){
+  const it=items.find(i=>i.id===id);if(!it)return;
+  editId=id;
+  document.getElementById('modal-title').textContent='✏️ Edit Item';
+  document.getElementById('modal-save-btn').textContent='✓ Update Item';
+  document.getElementById('m-id').value=it.id;document.getElementById('m-id').disabled=true;
+  document.getElementById('m-name').value=it.name;
+  document.getElementById('m-cat').value=it.category;
+  document.getElementById('m-sell').value=it.sellingPrice||0;
+  document.getElementById('m-buy').value=it.buyPrice||0;
+  document.getElementById('m-moq').value=it.moq||1;
+  document.getElementById('m-rl').value=it.reorderLevel||2;
+  document.getElementById('item-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('item-modal').classList.remove('open');editId=null;}
+function saveItem(){
+  const id=document.getElementById('m-id').value.trim(),name=document.getElementById('m-name').value.trim();
+  if(!id||!name)return toast('SKU & Name required','err');
+  if(!editId&&items.find(i=>i.id===id))return toast('SKU already exists','err');
+  const obj={id,name,category:document.getElementById('m-cat').value,sellingPrice:+document.getElementById('m-sell').value||0,buyPrice:+document.getElementById('m-buy').value||0,moq:+document.getElementById('m-moq').value||1,maxLevel:10,reorderLevel:+document.getElementById('m-rl').value||2};
+  if(editId){items=items.map(i=>i.id===editId?obj:i);toast('✓ Item updated!');}
+  else{items.push(obj);toast('✓ Item added!');}
+  lsSave('dg5_items',items);closeModal();renderItems();updateTopbar();
+}
+
+// ── MODAL: DELETE ─────────────────────────────────────────────────────────────
+function openDelModal(id){
+  const it=items.find(i=>i.id===id);if(!it)return;
+  delId=id;
+  document.getElementById('del-msg').innerHTML=`Are you sure you want to delete <b>${it.name}</b> (${it.id})?<br><span style="font-size:11px;color:var(--text3);margin-top:8px;display:block">This will remove the item from the master list. Purchase & sales history will remain.</span>`;
+  document.getElementById('del-modal').classList.add('open');
+}
+function closeDelModal(){document.getElementById('del-modal').classList.remove('open');delId=null;}
+function confirmDelete(){
+  if(!delId)return;
+  items=items.filter(i=>i.id!==delId);
+  lsSave('dg5_items',items);closeDelModal();renderItems();updateTopbar();toast('✓ Item deleted!');
+}
+
+// ── PURCHASE ──────────────────────────────────────────────────────────────────
+function onPSKUSearch(){
+  const q=(document.getElementById('p-sku-search').value||'').toLowerCase();
+  const dd=document.getElementById('p-sku-dropdown');
+  const enr=enrich();
+  const res=enr.filter(i=>i.name.toLowerCase().includes(q)||i.id.toLowerCase().includes(q)).slice(0,7);
+  if(q&&res.length){
+    dd.style.display='block';
+    dd.innerHTML=res.map(i=>`<div class="search-item" onclick="selectPSKU('${i.id}','${i.name.replace(/'/g,"\'")}')"><span class="search-sku">${i.id}</span><div><div class="search-name">${i.name}</div><div class="search-cat">Stock: ${i.stock} · Buy: ${i.lastBuy?'₹'+i.lastBuy:'—'}</div></div></div>`).join('');
+  }else dd.style.display='none';
+}
+function selectPSKU(id,name){
+  document.getElementById('p-sku-search').value=name;
+  document.getElementById('p-sku-val').value=id;
+  document.getElementById('p-sku-dropdown').style.display='none';
+  const lpp=getLPP(),enr=enrich(),it=enr.find(i=>i.id===id);
+  const lp=lpp[id]||it?.buyPrice||'';
+  document.getElementById('p-price').value=lp;
+  document.getElementById('p-last-hint').textContent=lp?`Last: ₹${lp}`:'';
+  pPreview();
+}
+function pPreview(){
+  const sku=document.getElementById('p-sku-val').value,qty=+document.getElementById('p-qty').value,price=+document.getElementById('p-price').value;
+  const prev=document.getElementById('p-preview');
+  if(sku&&qty&&price){
+    const enr=enrich(),it=enr.find(i=>i.id===sku),ppu=it?it.sellP-price:null;
+    const pc=ppu>0?'var(--green)':ppu<0?'var(--red)':'var(--text3)';
+    prev.style.display='flex';
+    prev.innerHTML=`<span><b>${it?.name?.slice(0,26)||sku}</b></span><span>Total: <b style="color:var(--yellow)">₹${(qty*price).toFixed(2)}</b></span>${it?.sellP?`<span>Profit/unit: <b style="color:${pc}">₹${ppu.toFixed(2)}</b></span>`:''}`;
+  }else prev.style.display='none';
+}
+function addPurchase(){
+  const sku=document.getElementById('p-sku-val').value,qty=+document.getElementById('p-qty').value,price=+document.getElementById('p-price').value;
+  if(!sku||!qty||!price)return toast('Select item, Qty & Price','err');
+  const it=items.find(i=>i.id===sku);if(!it)return toast('Invalid item','err');
+  purchases.push({id:Date.now().toString(),date:document.getElementById('p-date').value,sku,qty,purchasePrice:price,supplier:document.getElementById('p-supplier').value,notes:document.getElementById('p-notes').value,itemName:it.name});
+  lsSave('dg5_purchases',purchases);
+  document.getElementById('p-sku-search').value='';document.getElementById('p-sku-val').value='';
+  ['p-qty','p-price','p-supplier','p-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-last-hint').textContent='';document.getElementById('p-preview').style.display='none';
+  renderPurchases();renderPSummary();renderPurchaseTrend();updateTopbar();
+  toast('✓ Purchase recorded — '+it.name);
+}
+function renderPurchases(){
+  const from=document.getElementById('p-from')?.value,to=document.getElementById('p-to')?.value;
+  const q=(document.getElementById('p-search')?.value||'').toLowerCase();
+  const enr=enrich();
+  const f=[...purchases].sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(p=>{
+    if(from&&p.date<from)return false;if(to&&p.date>to)return false;
+    if(q&&!p.sku.toLowerCase().includes(q)&&!p.itemName?.toLowerCase().includes(q))return false;
+    return true;
+  });
+  const tot=f.reduce((s,p)=>s+p.qty*p.purchasePrice,0);
+  document.getElementById('p-total').textContent=f.length?`Total: ₹${tot.toFixed(2)}`:'';
+  document.getElementById('p-tbody').innerHTML=f.map((p,i)=>{const it=enr.find(x=>x.id===p.sku);const ppu=it?it.sellP-p.purchasePrice:null;return`<tr ${i%2?'class="tr-alt"':''}><td style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${p.date}</td><td>${badge('var(--blue)',p.sku)}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${p.itemName}</td><td style="font-weight:600">${p.qty}</td><td>${fmt(p.purchasePrice)}</td><td style="color:var(--yellow);font-weight:700">${fmt(p.qty*p.purchasePrice)}</td><td ${pClass(ppu)}>${ppu!==null?fmt(ppu):'—'}</td><td style="color:var(--text3)">${p.supplier||'—'}</td></tr>`;}).join('')||`<tr><td colspan="8"><div class="empty-state"><div class="empty-text">No purchases found</div></div></td></tr>`;
+}
+function renderPSummary(){
+  const pv=purchases.reduce((s,p)=>s+p.qty*p.purchasePrice,0);
+  const byS={};purchases.forEach(p=>{const s=p.supplier||'Unknown';byS[s]=(byS[s]||0)+p.qty*p.purchasePrice;});
+  const topS=Object.entries(byS).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  document.getElementById('p-summary').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px"><div style="background:var(--bg3);border-radius:9px;padding:14px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--yellow);font-family:'JetBrains Mono',monospace">${fmtK(pv)}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:1px">Total Purchased</div></div><div style="background:var(--bg3);border-radius:9px;padding:14px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--blue);font-family:'JetBrains Mono',monospace">${purchases.length}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:1px">Entries</div></div></div>${topS.length?`<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Top Suppliers</div>${topS.map(([s,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text2);font-weight:500">${s}</span><span style="color:var(--yellow);font-weight:700">₹${v.toFixed(0)}</span></div>`).join('')}`:''}`;
+}
+function renderPurchaseTrend(){
+  const last14=[...Array(14)].map((_,i)=>dAgo(13-i));
+  const vals=last14.map(d=>purchases.filter(p=>p.date===d).reduce((s,p)=>s+p.qty*p.purchasePrice,0));
+  mkChart('chart-purchase-trend',{type:'bar',data:{labels:last14.map(d=>d.slice(5)),datasets:[{label:'Purchase ₹',data:vals,backgroundColor:'rgba(59,130,246,.7)',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{},ticks:{callback:v=>'₹'+v,font:{size:9}}}}}});
+}
+function clearPF(){['p-from','p-to','p-search'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderPurchases();}
+
+// ── SALES ─────────────────────────────────────────────────────────────────────
+function onSSKUSearch(){
+  const q=(document.getElementById('s-sku-search').value||'').toLowerCase();
+  const dd=document.getElementById('s-sku-dropdown');
+  const enr=enrich();
+  const res=enr.filter(i=>i.stock>0&&(i.name.toLowerCase().includes(q)||i.id.toLowerCase().includes(q))).slice(0,7);
+  if(q&&res.length){
+    dd.style.display='block';
+    dd.innerHTML=res.map(i=>`<div class="search-item" onclick="selectSSKU('${i.id}','${i.name.replace(/'/g,"\'")}')"><span class="search-sku">${i.id}</span><div><div class="search-name">${i.name}</div><div class="search-cat">Stock: ${i.stock} · MRP: ${fmt(i.sellP)}</div></div></div>`).join('');
+  }else dd.style.display='none';
+}
+function selectSSKU(id,name){
+  document.getElementById('s-sku-search').value=name;
+  document.getElementById('s-sku-val').value=id;
+  document.getElementById('s-sku-dropdown').style.display='none';
+  const enr=enrich(),it=enr.find(i=>i.id===id);
+  if(it)document.getElementById('s-price').value=it.sellP||'';
+  sPreview();
+}
+function sPreview(){
+  const sku=document.getElementById('s-sku-val').value,qty=+document.getElementById('s-qty').value,price=+document.getElementById('s-price').value;
+  const prev=document.getElementById('s-preview');
+  if(sku&&qty&&price){
+    const enr=enrich(),it=enr.find(i=>i.id===sku);
+    const prof=(price-(it?.lastBuy||0))*qty,pc=prof>0?'var(--green)':'var(--red)';
+    prev.style.display='flex';
+    prev.innerHTML=`<span>Stock: <b>${it?.stock||0}</b></span><span>Rev: <b style="color:var(--yellow)">₹${(qty*price).toFixed(2)}</b></span><span>Profit: <b style="color:${pc}">₹${prof.toFixed(2)}</b></span>`;
+  }else prev.style.display='none';
+}
+function addSale(){
+  const sku=document.getElementById('s-sku-val').value,qty=+document.getElementById('s-qty').value,price=+document.getElementById('s-price').value;
+  if(!sku||!qty)return toast('Select item & qty','err');
+  const enr=enrich(),it=enr.find(i=>i.id===sku);
+  if(!it)return toast('Invalid item','err');
+  if(it.stock<qty)return toast(`Only ${it.stock} in stock!`,'err');
+  sales.push({id:Date.now().toString(),date:document.getElementById('s-date').value,sku,qty,salePrice:price||it.sellP,itemName:it.name});
+  lsSave('dg5_sales',sales);
+  document.getElementById('s-sku-search').value='';document.getElementById('s-sku-val').value='';
+  ['s-qty','s-price'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('s-preview').style.display='none';
+  renderSales();renderSSummary();renderSalesTrend();updateTopbar();
+  toast('✓ Sale recorded — '+it.name);
+}
+function renderSales(){
+  const from=document.getElementById('s-from')?.value,to=document.getElementById('s-to')?.value;
+  const q=(document.getElementById('s-search')?.value||'').toLowerCase();
+  const enr=enrich();
+  const f=[...sales].sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(s=>{
+    if(from&&s.date<from)return false;if(to&&s.date>to)return false;
+    if(q&&!s.sku.toLowerCase().includes(q)&&!s.itemName?.toLowerCase().includes(q))return false;
+    return true;
+  });
+  const rev=f.reduce((s,sl)=>{const it=enr.find(i=>i.id===sl.sku);return s+(+sl.salePrice||it?.sellP||0)*+sl.qty;},0);
+  const prof=f.reduce((s,sl)=>{const it=enr.find(i=>i.id===sl.sku);return s+((+sl.salePrice||it?.sellP||0)-(it?.lastBuy||0))*+sl.qty;},0);
+  const sl=document.getElementById('s-rev-lbl'),pl=document.getElementById('s-profit-lbl');
+  if(sl)sl.textContent=f.length?`Rev: ₹${rev.toFixed(2)}`:'';
+  if(pl){pl.textContent=f.length?`Profit: ₹${prof.toFixed(2)}`:'';pl.style.color=prof>=0?'var(--green)':'var(--red)';}
+  document.getElementById('s-tbody').innerHTML=f.map((s,i)=>{const it=enr.find(x=>x.id===s.sku);const pr=((+s.salePrice||it?.sellP||0)-(it?.lastBuy||0))*+s.qty;return`<tr ${i%2?'class="tr-alt"':''}><td style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${s.date}</td><td>${badge('var(--green)',s.sku)}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${s.itemName}</td><td style="font-weight:600">${s.qty}</td><td>${fmt(s.salePrice)}</td><td style="color:var(--yellow);font-weight:700">${fmt(+s.qty*+s.salePrice)}</td><td>${it?.lastBuy?fmt(it.lastBuy):'—'}</td><td ${pClass(pr)}>${fmt(pr)}</td></tr>`;}).join('')||`<tr><td colspan="8"><div class="empty-state"><div class="empty-text">No sales found</div></div></td></tr>`;
+}
+function renderSSummary(){
+  const enr=enrich();
+  const rev=sales.reduce((s,sl)=>{const it=enr.find(i=>i.id===sl.sku);return s+(+sl.salePrice||it?.sellP||0)*+sl.qty;},0);
+  const prof=sales.reduce((s,sl)=>{const it=enr.find(i=>i.id===sl.sku);return s+((+sl.salePrice||it?.sellP||0)-(it?.lastBuy||0))*+sl.qty;},0);
+  document.getElementById('s-summary').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px"><div style="background:var(--bg3);border-radius:9px;padding:14px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--yellow);font-family:'JetBrains Mono',monospace">${fmtK(rev)}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:1px">Revenue</div></div><div style="background:var(--bg3);border-radius:9px;padding:14px;text-align:center"><div style="font-size:18px;font-weight:800;color:${prof>=0?'var(--green)':'var(--red)'};font-family:'JetBrains Mono',monospace">${fmtK(prof)}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:1px">Profit</div></div></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text2)">Transactions</span><b>${sales.length}</b></div><div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12px"><span style="color:var(--text2)">Margin</span><b style="color:var(--green)">${rev>0?((prof/rev)*100).toFixed(1)+'%':'—'}</b></div>`;
+}
+function renderSalesTrend(){
+  const last14=[...Array(14)].map((_,i)=>dAgo(13-i));
+  const enr=enrich();
+  const revData=last14.map(d=>sales.filter(s=>s.date===d).reduce((s,sl)=>{const it=enr.find(i=>i.id===sl.sku);return s+(+sl.salePrice||it?.sellP||0)*+sl.qty;},0));
+  mkChart('chart-sales-trend',{type:'bar',data:{labels:last14.map(d=>d.slice(5)),datasets:[{label:'Revenue ₹',data:revData,backgroundColor:'rgba(56,161,105,.7)',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{},ticks:{callback:v=>'₹'+v,font:{size:9}}}}}});
+}
+function clearSF(){['s-from','s-to','s-search'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderSales();}
+
+// ── DEMAND ────────────────────────────────────────────────────────────────────
+function renderDemand(){
+  const days=document.getElementById('d-period')?.value,cat=document.getElementById('d-cat')?.value||'All';
+  const cutoff=days!=='all'?dAgo(+days):null;
+  const fs=sales.filter(s=>!cutoff||s.date>=cutoff);
+  // Demand map
+  const dm={};fs.forEach(s=>{const it=items.find(i=>i.id===s.sku);if(cat!=='All'&&it?.category!==cat)return;dm[s.sku]=(dm[s.sku]||0)+ +s.qty;});
+  const topD=Object.entries(dm).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const colors=['#e53e3e','#d97706','#38a169','#3b82f6','#7c3aed','#ea580c','#06b6d4','#ec4899','#14b8a6','#f97316'];
+  // Bar chart
+  mkChart('chart-demand-bar',{type:'bar',data:{labels:topD.map(([sku])=>{const it=items.find(i=>i.id===sku);return it?.name?.slice(0,14)||sku;}),datasets:[{label:'Units Sold',data:topD.map(([,v])=>v),backgroundColor:colors,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{},ticks:{font:{size:10}}}}}});
+  // Category pie
+  const catSales={};fs.forEach(s=>{const it=items.find(i=>i.id===s.sku);const c=it?.category||'Other';catSales[c]=(catSales[c]||0)+(+s.salePrice||it?.sellingPrice||0)*+s.qty;});
+  const cTop=Object.entries(catSales).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  mkChart('chart-cat-pie',{type:'pie',data:{labels:cTop.map(([c])=>c),datasets:[{data:cTop.map(([,v])=>+v.toFixed(0)),backgroundColor:colors,borderWidth:2,borderColor:'transparent'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}}});
+  // Top sold list
+  const maxQ=topD[0]?.[1]||1;
+  document.getElementById('d-top-sold').innerHTML=topD.slice(0,7).map(([sku,qty],i)=>{
+    const it=items.find(x=>x.id===sku);const c=colors[i]||'var(--blue)';
+    return`<div class="demand-row"><div class="demand-rank" style="background:${c}18;color:${c}">${i+1}</div><div class="demand-info"><div class="demand-name">${it?.name?.slice(0,26)||sku}</div><div class="demand-bar-bg"><div class="demand-fill" style="width:${(qty/maxQ*100).toFixed(0)}%;background:${c}"></div></div></div><div class="demand-qty" style="color:${c}">${qty}</div></div>`;
+  }).join('')||'<div class="empty-state" style="padding:20px"><div class="empty-text">No sales data yet</div></div>';
+  // Most purchased
+  const pm={};purchases.forEach(p=>{pm[p.sku]=(pm[p.sku]||0)+ +p.qty;});
+  const tP=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  document.getElementById('d-top-purchased').innerHTML=tP.map(([sku,qty],i)=>{const it=items.find(x=>x.id===sku);return`<div class="demand-row"><div class="demand-rank" style="background:var(--blue)18;color:var(--blue)">${i+1}</div><div class="demand-info"><div class="demand-name">${it?.name?.slice(0,26)||sku}</div></div><div class="demand-qty" style="color:var(--blue)">${qty}</div></div>`;}).join('')||'<div class="empty-state" style="padding:20px"><div class="empty-text">No purchase data</div></div>';
+  // Top margin
+  const enr=enrich();
+  const tM=[...enr].filter(i=>i.profit>0&&i.lastBuy>0).sort((a,b)=>b.profitPct-a.profitPct).slice(0,7);
+  document.getElementById('d-top-margin').innerHTML=tM.map((it,i)=>`<div class="demand-row"><div class="demand-rank" style="background:var(--green)18;color:var(--green)">${i+1}</div><div class="demand-info"><div class="demand-name">${it.name.slice(0,26)}</div><div style="font-size:10px;color:var(--text3)">${fmt(it.lastBuy)} → ${fmt(it.sellP)}</div></div><div class="demand-qty" style="color:var(--green)">${it.profitPct}%</div></div>`).join('')||'<div class="empty-state" style="padding:20px"><div class="empty-text">Add buy & sell prices</div></div>';
+  renderDateAnalysis();
+}
+function renderDateAnalysis(){
+  const from=document.getElementById('da-from')?.value,to=document.getElementById('da-to')?.value;
+  const enr=enrich();
+  const fs=sales.filter(s=>(!from||s.date>=from)&&(!to||s.date<=to));
+  const bd={};fs.forEach(s=>{
+    if(!bd[s.date])bd[s.date]={n:0,units:0,rev:0,prof:0,itm:{}};
+    const it=enr.find(i=>i.id===s.sku);
+    bd[s.date].n++;bd[s.date].units+=+s.qty;
+    const r=(+s.salePrice||it?.sellP||0)*+s.qty,p=((+s.salePrice||it?.sellP||0)-(it?.lastBuy||0))*+s.qty;
+    bd[s.date].rev+=r;bd[s.date].prof+=p;bd[s.date].itm[s.sku]=(bd[s.date].itm[s.sku]||0)+ +s.qty;
+  });
+  document.getElementById('da-tbody').innerHTML=Object.entries(bd).sort((a,b)=>b[0].localeCompare(a[0])).map(([d,v],i)=>{
+    const topI=Object.entries(v.itm).sort((a,b)=>b[1]-a[1])[0];
+    const topIt=topI?items.find(x=>x.id===topI[0]):null;
+    return`<tr ${i%2?'class="tr-alt"':''}><td style="font-family:'JetBrains Mono',monospace;font-weight:600">${d}</td><td style="color:var(--blue);font-weight:600">${v.n}</td><td style="font-weight:600">${v.units}</td><td style="color:var(--yellow);font-weight:700">${fmt(v.rev)}</td><td ${pClass(v.prof)}>${fmt(v.prof)}</td><td ${pClass(v.prof)}>${v.rev>0?((v.prof/v.rev)*100).toFixed(1)+'%':'—'}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">${topIt?.name?.slice(0,22)||'—'}</td></tr>`;
+  }).join('')||`<tr><td colspan="7"><div class="empty-state"><div class="empty-text">No sales data for this period</div></div></td></tr>`;
+}
+
+// ── REORDER ───────────────────────────────────────────────────────────────────
+function renderReorder(){
+  const enr=enrich(),lpp=getLPP();
+  const ri=[...enr.filter(i=>i.needsReorder)].sort((a,b)=>a.stock-b.stock);
+  document.getElementById('reorder-title').textContent=`🔔 Reorder Sheet — ${ri.length} Items`;
+  const estCost=ri.reduce((s,i)=>(s+(i.moq||1)*(lpp[i.id]||i.buyPrice||0)),0);
+  document.getElementById('reorder-stats').innerHTML=[
+    ['var(--red)',ri.length,'Need Reorder'],
+    ['var(--red)',ri.filter(i=>i.stock<=0).length,'Out of Stock'],
+    ['var(--yellow)',ri.filter(i=>i.stock>0).length,'Low Stock'],
+    ['var(--blue)',fmt(estCost),'Est. Reorder Cost'],
+  ].map(([c,v,l])=>`<div class="stat-card" style="border-top:3px solid ${c}"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('');
+  document.getElementById('reorder-tbody').innerHTML=ri.map((it,i)=>{
+    const lp=lpp[it.id]||it.buyPrice||0;
+    const pr=it.stock<=0?badge('var(--red)','URGENT'):badge('var(--yellow)','LOW');
+    return`<tr ${i%2?'class="tr-alt"':''}><td>${pr}</td><td>${badge('var(--blue)',it.id)}</td><td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500">${it.name}</td><td>${pill('var(--purple)',it.category)}</td><td style="color:${it.stock<=0?'var(--red)':'var(--yellow)'};font-weight:700">${it.stock}</td><td>${it.reorderLevel}</td><td style="color:var(--red);font-weight:700">${it.shortage}</td><td>${lp?fmt(lp):'—'}</td><td>${it.moq}</td><td><input style="width:70px;padding:5px 8px;font-size:12px" type="number" id="ro-q-${it.id}" placeholder="${it.moq}"/></td><td><input style="width:85px;padding:5px 8px;font-size:12px" type="number" id="ro-p-${it.id}" placeholder="${lp||'₹'}"/></td></tr>`;
+  }).join('')||`<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-text">All items well stocked!</div></div></td></tr>`;
+}
+function reorderAll(){
+  const enr=enrich(),lpp=getLPP(),ri=enr.filter(i=>i.needsReorder);
+  const date=document.getElementById('ro-date')?.value||today();
+  const entries=ri.map(it=>{
+    const qty=+document.getElementById('ro-q-'+it.id)?.value||it.moq;
+    const price=+document.getElementById('ro-p-'+it.id)?.value||lpp[it.id]||it.buyPrice||0;
+    return{id:Date.now().toString()+it.id,date,sku:it.id,qty,purchasePrice:price,supplier:'Auto-reorder',notes:'Reorder',itemName:it.name};
+  }).filter(e=>e.purchasePrice>0);
+  if(!entries.length)return toast('Enter prices first!','err');
+  purchases=[...purchases,...entries];lsSave('dg5_purchases',purchases);
+  renderReorder();updateTopbar();toast(`✓ ${entries.length} items reordered!`);
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────────────────
+function renderReports(){
+  const from=document.getElementById('rep-from')?.value,to=document.getElementById('rep-to')?.value;
+  const cat=document.getElementById('rep-cat')?.value||'All';
+  const enr=enrich();
+  const fp=purchases.filter(p=>(!from||p.date>=from)&&(!to||p.date<=to));
+  const fs=sales.filter(s=>(!from||s.date>=from)&&(!to||s.date<=to));
+  const st=calcStats(enr,fp,fs);
+  document.getElementById('rep-stats').innerHTML=[
+    ['var(--blue)',fmt(st.pv),'Purchased','🛒'],
+    ['var(--yellow)',fmt(st.rev),'Revenue','📈'],
+    ['var(--red)',fmt(st.cogs),'Cost of Goods','💸'],
+    [st.profit>=0?'var(--green)':'var(--red)',fmt(st.profit),'Gross Profit','💰'],
+    ['var(--purple)',st.margin+'%','Profit Margin','%'],
+    ['var(--green)',fmt(st.sv),'Stock Value','📦'],
+  ].map(([c,v,l,ic])=>`<div class="stat-card" style="border-top:3px solid ${c}"><div class="stat-icon">${ic}</div><div class="stat-val" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('');
+  // P&L chart
+  mkChart('chart-pnl',{type:'bar',data:{labels:['Revenue','COGS','Gross Profit'],datasets:[{data:[st.rev,st.cogs,st.profit],backgroundColor:['rgba(59,130,246,.8)','rgba(229,62,62,.8)','rgba(56,161,105,.8)'],borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{},ticks:{callback:v=>'₹'+v}}}}});
+  // Stock dist
+  const sm={ok:0,low:0,out:0};enr.forEach(i=>{if(i.stock<=0)sm.out++;else if(i.needsReorder)sm.low++;else sm.ok++;});
+  mkChart('chart-stock-dist',{type:'doughnut',data:{labels:['In Stock','Low Stock','Out of Stock'],datasets:[{data:[sm.ok,sm.low,sm.out],backgroundColor:['rgba(56,161,105,.8)','rgba(217,119,6,.8)','rgba(229,62,62,.8)'],borderWidth:3,borderColor:'transparent'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+  // Cat summary
+  const m={};enr.forEach(i=>{const c=i.category;if(!m[c])m[c]={n:0,sv:0,pp:0,ins:0};m[c].n++;m[c].sv+=i.stock*i.lastBuy;m[c].pp+=i.profit*i.stock;if(i.stock>0)m[c].ins++;});
+  document.getElementById('rep-cat-body').innerHTML=Object.entries(m).sort((a,b)=>b[1].sv-a[1].sv).map(([c,d],i)=>`<tr ${i%2?'class="tr-alt"':''}><td>${pill('var(--purple)',c)}</td><td>${d.n}</td><td style="color:var(--green);font-weight:600">${d.ins}</td><td style="color:var(--yellow);font-weight:700">${fmt(d.sv)}</td><td ${pClass(d.pp)}>${fmt(d.pp)}</td></tr>`).join('');
+  // P&L
+  document.getElementById('pnl-statement').innerHTML=[['Total Revenue',st.rev,'var(--yellow)'],['Cost of Goods Sold',st.cogs,'var(--red)'],['─────────────────','',''],['Gross Profit',st.profit,st.profit>=0?'var(--green)':'var(--red)'],['Profit Margin',st.margin+'%','var(--purple)'],['Stock Value',st.sv,'var(--blue)']].map(([l,v,c])=>l.startsWith('─')?`<div style="border-top:1px solid var(--border);margin:6px 0"></div>`:`<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--text2);font-weight:500">${l}</span><span style="font-weight:700;color:${c};font-family:'JetBrains Mono',monospace">${typeof v==='number'?fmt(v):v}</span></div>`).join('');
+  renderInvTable();
+}
+function renderInvTable(){
+  const cat=document.getElementById('rep-inv-cat')?.value||'All';
+  const enr=enrich().filter(i=>cat==='All'||i.category===cat);
+  document.getElementById('rep-inv-body').innerHTML=enr.map((it,i)=>{const sc=it.stock<=0?'var(--red)':it.needsReorder?'var(--yellow)':'var(--green)';return`<tr ${i%2?'class="tr-alt"':''}><td>${badge('var(--blue)',it.id)}</td><td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500">${it.name}</td><td>${pill('var(--purple)',it.category)}</td><td style="color:${sc};font-weight:700">${it.stock}</td><td>${it.lastBuy?fmt(it.lastBuy):'—'}</td><td>${it.sellP?fmt(it.sellP):'—'}</td><td ${pClass(it.profit)}>${it.lastBuy&&it.sellP?fmt(it.profit):'—'}</td><td ${pClass(it.profit)}>${it.profitPct?it.profitPct+'%':'—'}</td><td style="color:var(--yellow)">${it.lastBuy?fmt(it.stock*it.lastBuy):'—'}</td></tr>`;}).join('');
+}
+function clearRepF(){['rep-from','rep-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderReports();}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function init(){
+  applyTheme();
+  const t=today();
+  ['p-date','s-date','ro-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});
+  // Populate cat selects
+  ALL_CATS.forEach(c=>{
+    document.querySelectorAll('#item-cat-f,#d-cat,#rep-cat,#rep-inv-cat').forEach(el=>{
+      const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);
+    });
+    const mc=document.getElementById('m-cat');
+    if(mc){const o=document.createElement('option');o.value=c;o.textContent=c;mc.appendChild(o);}
+  });
+  renderDashboard();updateTopbar();
+}
+init();
+</script>
+</body>
+</html>
